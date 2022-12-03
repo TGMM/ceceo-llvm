@@ -1,0 +1,26 @@
+use crate::lexer::{Tok, LexicalError};
+
+grammar<'input>(input: &'input str);
+
+extern {
+    type Location = usize;
+    type Error = LexicalError;
+
+    enum Tok<'input> {
+        "(" => Tok::LeftParen,
+        ")" => Tok::RightParen,
+        Symbol => Tok::Symbol(<&'input str>),
+        Str => Tok::Str(<&'input str>),
+        Num => Tok::Num(<&'input str>),
+        Op => Tok::Op(<&'input str>),
+    }
+}
+
+pub Expr: Vec<&'input str> = "(" <a:Atom+> ")" => <>;
+
+Atom: &'input str = {
+    Symbol,
+    Str,
+    Num,
+    Op
+}
