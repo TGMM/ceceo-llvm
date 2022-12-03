@@ -121,21 +121,13 @@ impl<'input> Lexer<'input> {
     }
 
     pub fn is_op(c: char) -> bool {
-        '+' == c
-            || '-' == c
-            || '*' == c
-            || '/' == c
-            || '<' == c
-            || '>' == c
-            || '%' == c
-            || '\"' == c
-            || '=' == c
-            || '!' == c
-            || '&' == c
+        const OPS: [char; 11] = ['+', '-', '*', '<', '>', '%', '\"', '=', '!', '&', '/'];
+        return OPS.contains(&c);
     }
 
     pub fn is_whitespace(c: char) -> bool {
-        ' ' == c || '\n' == c || '\t' == c
+        const WHITESPACE_CHARS: [char; 3] = [' ', '\n', '\t'];
+        return WHITESPACE_CHARS.contains(&c);
     }
 }
 
@@ -165,7 +157,7 @@ impl<'input> Iterator for Lexer<'input> {
                     // return Some(Ok((i, Tok::Whitespace, i + 1)));
                 }
                 None => return None, // End of file
-                _ => panic!("Tokenizer: invalid token"),
+                Some((i, c)) => panic!("Tokenizer: invalid token {} at {}", c, i),
             }
         }
     }
