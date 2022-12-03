@@ -18,19 +18,17 @@ extern {
     }
 }
 
-pub Expr: Vec<Node> = "(" <a:AtomOrList+> ")" => <>;
-
+pub Program: Vec<Vec<Node>> = <Expr+> => <>;
+Expr: Vec<Node> = "(" <a:AtomOrList*> ")" => <>;
 
 AtomOrList: Node = {
-    List => Node::List(<>),
-    Atom => <>
+    Expr => Node::List(<>),
+    Atom => Node::Atom(<>)
 }
 
-List: Vec<Node> = "(" <a:Atom+> ")" => <>;
-
-Atom: Node = {
-    Symbol => Node::Atom(Atom::Symbol(<>.to_string())),
-    Str => Node::Atom(Atom::Str(<>.to_string())),
-    Num => Node::Atom(Atom::Num(i32::from_str(<>).unwrap())),
-    Op => Node::Atom(Atom::Symbol(<>.to_string()))
+Atom: Atom = {
+    Symbol => Atom::Symbol(<>.to_string()),
+    Str => Atom::Str(<>.to_string()),
+    Num => Atom::Num(i32::from_str(<>).unwrap()),
+    Op => Atom::Symbol(<>.to_string())
 }

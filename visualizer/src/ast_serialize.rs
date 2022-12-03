@@ -40,6 +40,12 @@ fn nodes_to_info_structs(vn: &Vec<Node>) -> ListOrAtomInfo {
     return ListOrAtomInfo::List(res);
 }
 
+impl ToInfoStruct for Vec<Vec<Node>> {
+    fn to_info_struct(&self) -> ListOrAtomInfo {
+        ListOrAtomInfo::List(self.iter().map(|n| nodes_to_info_structs(n)).collect())
+    }
+}
+
 impl ToInfoStruct for Vec<Node> {
     fn to_info_struct(&self) -> ListOrAtomInfo {
         nodes_to_info_structs(self)
