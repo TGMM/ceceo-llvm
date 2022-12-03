@@ -44,40 +44,31 @@ impl<'input> Lexer<'input> {
     ) -> Option<LexerItem<'input>> {
         let mut end_idx = start_idx + 1;
 
-        // TODO: This code absolutely sucks, fix it.
+        let output_lexer_item = |new_end_idx: usize| -> Option<LexerItem<'input>> {
+            let tok = match tok_type {
+                Tok::Symbol(_) => Tok::Symbol(&self.input[start_idx..new_end_idx]),
+                Tok::Str(_) => Tok::Str(&self.input[start_idx..new_end_idx]),
+                Tok::Num(_) => Tok::Num(&self.input[start_idx..new_end_idx]),
+                Tok::Op(_) => Tok::Op(&self.input[start_idx..new_end_idx]),
+                Tok::Whitespace => Tok::Whitespace,
+                Tok::LeftParen => Tok::LeftParen,
+                Tok::RightParen => Tok::RightParen,
+            };
+
+            return Some(Ok((start_idx, tok, new_end_idx)));
+        };
+
         loop {
             match self.chars.peek() {
                 // Condition fulfilled
                 Some((idx, c)) if !condition(*c) => {
                     end_idx = *idx;
-
-                    let tok = match tok_type {
-                        Tok::Symbol(_) => Tok::Symbol(&self.input[start_idx..end_idx]),
-                        Tok::Str(_) => Tok::Str(&self.input[start_idx..end_idx]),
-                        Tok::Num(_) => Tok::Num(&self.input[start_idx..end_idx]),
-                        Tok::Op(_) => Tok::Op(&self.input[start_idx..end_idx]),
-                        Tok::Whitespace => Tok::Whitespace,
-                        Tok::LeftParen => Tok::LeftParen,
-                        Tok::RightParen => Tok::RightParen,
-                    };
-
-                    return Some(Ok((start_idx, tok, end_idx)));
+                    return output_lexer_item(end_idx);
                 }
                 // String end
                 None => {
                     end_idx += 1;
-
-                    let tok = match tok_type {
-                        Tok::Symbol(_) => Tok::Symbol(&self.input[start_idx..end_idx]),
-                        Tok::Str(_) => Tok::Str(&self.input[start_idx..end_idx]),
-                        Tok::Num(_) => Tok::Num(&self.input[start_idx..end_idx]),
-                        Tok::Op(_) => Tok::Op(&self.input[start_idx..end_idx]),
-                        Tok::Whitespace => Tok::Whitespace,
-                        Tok::LeftParen => Tok::LeftParen,
-                        Tok::RightParen => Tok::RightParen,
-                    };
-
-                    return Some(Ok((start_idx, tok, end_idx)));
+                    return output_lexer_item(end_idx);
                 }
                 // Skip char
                 Some((idx, _)) => {
