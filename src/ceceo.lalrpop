@@ -1,4 +1,6 @@
 use crate::lexer::{Tok, LexicalError};
+use crate::ast::{Node, Atom};
+use std::str::FromStr;
 
 grammar<'input>(input: &'input str);
 
@@ -16,11 +18,19 @@ extern {
     }
 }
 
-pub Expr: Vec<&'input str> = "(" <a:Atom+> ")" => <>;
+pub Expr: Vec<Node> = "(" <a:AtomOrList+> ")" => <>;
 
-Atom: &'input str = {
-    Symbol,
-    Str,
-    Num,
-    Op
+
+AtomOrList: Node = {
+    List => Node::List(<>),
+    Atom => <>
+}
+
+List: Vec<Node> = "(" <a:Atom+> ")" => <>;
+
+Atom: Node = {
+    Symbol => Node::Atom(Atom::Symbol(<>.to_string())),
+    Str => Node::Atom(Atom::Str(<>.to_string())),
+    Num => Node::Atom(Atom::Num(i32::from_str(<>).unwrap())),
+    Op => Node::Atom(Atom::Symbol(<>.to_string()))
 }

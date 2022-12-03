@@ -13,11 +13,21 @@ fn main() {
 }
 
 #[test]
-fn expr_test() {
+fn basic_expr_test() {
     let input = "(atom 10 \"string\" + - * /)";
     let lexer = Lexer::new(input);
     let ep = ceceo::ExprParser::new();
 
-    let x = ep.parse(input, lexer).unwrap();
-    print!("{:?}", x);
+    let parsed_expr = ep.parse(input, lexer).unwrap();
+    print!("{:?}", parsed_expr);
+}
+
+#[test]
+fn recursive_expr_test() {
+    let input = "(atom atom (atom 10 \"string\" + - * /))";
+    let lexer = Lexer::new(input);
+    let ep = ceceo::ExprParser::new();
+
+    let parsed_expr = ep.parse(input, lexer).unwrap();
+    print!("{:?}", parsed_expr);
 }

@@ -1,4 +1,10 @@
 #[derive(Debug, PartialEq)]
+pub enum Node {
+    Atom(Atom),
+    List(Vec<Node>),
+}
+
+#[derive(Debug, PartialEq)]
 pub enum Atom {
     Num(i32),
     Symbol(String),
@@ -6,6 +12,7 @@ pub enum Atom {
     Builtin(Builtin),
 }
 
+// TODO: Remove this
 #[derive(Debug, PartialEq)]
 pub enum Builtin {
     Auto,   // auto
