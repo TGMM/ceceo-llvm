@@ -1,15 +1,17 @@
 pub mod ast;
 pub mod lexer;
 
-use lalrpop_util::lalrpop_mod;
-
-#[cfg(test)]
-use lexer::Lexer;
+use ast::Node;
+use lalrpop_util::{lalrpop_mod, ParseError};
+use lexer::{Lexer, LexicalError, Tok};
 
 lalrpop_mod!(pub ceceo);
 
-fn main() {
-    println!("Hello, world!");
+pub fn parse_ceceo(input: &str) -> Result<Vec<Node>, ParseError<usize, Tok<'_>, LexicalError>> {
+    let lexer = Lexer::new(input);
+    let ep = ceceo::ExprParser::new();
+
+    ep.parse(input, lexer)
 }
 
 #[test]
