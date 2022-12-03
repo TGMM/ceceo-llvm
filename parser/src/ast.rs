@@ -4,7 +4,7 @@ pub enum Node {
     List(Vec<Node>),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Atom {
     Num(i32),
     Symbol(String),

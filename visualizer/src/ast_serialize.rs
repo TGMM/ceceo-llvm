@@ -1,12 +1,11 @@
 #![allow(non_upper_case_globals)]
 
-use ceceo_llvm_parser::ast::Node;
+use ceceo_llvm_parser::ast::{Atom, Node};
 use serde::Serialize;
 
-// TODO: Find a way to unify this, so it's not repeated between crates
 #[derive(Clone, Serialize)]
-#[serde(untagged)]
-pub enum Atom {
+#[serde(untagged, remote = "Atom")]
+pub enum AtomS {
     Num(i32),
     Symbol(String),
     Str(String),
@@ -26,6 +25,7 @@ const Str: &str = "string";
 #[derive(Clone, Serialize)]
 pub struct InfoStruct {
     r#type: String,
+    #[serde(with = "AtomS")]
     value: Box<Atom>,
 }
 
