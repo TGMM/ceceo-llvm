@@ -8,5 +8,4 @@ lalrpop = "0.19.8"
 
 [dependencies]
 lalrpop-util = { version = "0.19.8", features = ["lexer"]}
-inkwell = { git = "https://github.com/TheDan64/inkwell", branch = "master", features = ["llvm14-0"] }
 regex = "1.7.0"
