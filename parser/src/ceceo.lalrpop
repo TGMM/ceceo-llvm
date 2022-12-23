@@ -11,6 +11,7 @@ extern {
     enum Tok<'input> {
         "(" => Tok::LeftParen,
         ")" => Tok::RightParen,
+        "'" => Tok::Quote,
         Symbol => Tok::Symbol(<&'input str>),
         Str => Tok::Str(<&'input str>),
         Num => Tok::Num(<&'input str>),
@@ -23,7 +24,9 @@ Expr: Vec<Node> = "(" <a:AtomOrList*> ")" => <>;
 
 AtomOrList: Node = {
     Expr => Node::List(<>),
-    Atom => Node::Atom(<>)
+    Atom => Node::Atom(<>),
+    "'" <e:Expr> => Node::QuoteList(e),
+    "'" <a:Atom> => Node::QuoteAtom(a)
 }
 
 Atom: Atom = {

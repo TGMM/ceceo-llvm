@@ -80,3 +80,23 @@ fn real_program_test() {
         }
     }
 }
+
+#[test]
+fn quote_list_test() {
+    let input = "('(1 2 3) '(\"string\") '(symbol))";
+    let lexer = Lexer::new(input);
+    let ep = ceceo::ProgramParser::new();
+
+    let parsed_expr = ep.parse(input, lexer).unwrap();
+    print!("{:?}", parsed_expr);
+}
+
+#[test]
+fn quote_atom_test() {
+    let input = "('1 'symbol '\"string\" '+)";
+    let lexer = Lexer::new(input);
+    let ep = ceceo::ProgramParser::new();
+
+    let parsed_expr = ep.parse(input, lexer).unwrap();
+    print!("{:?}", parsed_expr);
+}

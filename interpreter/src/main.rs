@@ -73,8 +73,10 @@ fn handle_atom(atom: Atom) {
 
 fn handle_node(node: Node) {
     match node {
-        ceceo_llvm_parser::ast::Node::Atom(atom) => handle_atom(atom),
-        ceceo_llvm_parser::ast::Node::List(list) => handle_list(list),
+        Node::Atom(atom) => handle_atom(atom),
+        Node::List(list) => handle_list(list),
+        Node::QuoteList(_) => todo!(),
+        Node::QuoteAtom(_) => todo!(),
     }
 }
 

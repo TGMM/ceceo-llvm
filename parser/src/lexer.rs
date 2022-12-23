@@ -8,6 +8,7 @@ pub enum Tok<'input> {
     Whitespace,
     LeftParen,
     RightParen,
+    Quote,
     Symbol(&'input str),
     Str(&'input str),
     Num(&'input str),
@@ -53,6 +54,7 @@ impl<'input> Lexer<'input> {
                 Tok::Whitespace => Tok::Whitespace,
                 Tok::LeftParen => Tok::LeftParen,
                 Tok::RightParen => Tok::RightParen,
+                Tok::Quote => Tok::Quote,
             };
 
             return Some(Ok((start_idx, tok, new_end_idx)));
@@ -99,7 +101,7 @@ impl<'input> Lexer<'input> {
         _ = self.consume()?; // consume leading "
         let res = self.consume_while(
             start_idx + 1,
-            |c: char| -> bool { !Lexer::is_quote(c) },
+            |c: char| -> bool { !Lexer::is_string_quote(c) },
             Tok::Str(""),
         );
         _ = self.consume()?; // consume trailing "
@@ -116,8 +118,12 @@ impl<'input> Lexer<'input> {
         ch.is_ascii_digit()
     }
 
-    pub fn is_quote(ch: char) -> bool {
+    pub fn is_string_quote(ch: char) -> bool {
         '"' == ch
+    }
+
+    pub fn is_quote(ch: char) -> bool {
+        '\'' == ch
     }
 
     pub fn is_op(c: char) -> bool {
@@ -146,7 +152,11 @@ impl<'input> Iterator for Lexer<'input> {
                     _ = self.consume();
                     return Some(Ok((i, Tok::RightParen, i + 1)));
                 }
-                Some((i, c)) if Lexer::is_quote(c) => return self.consume_string(i),
+                Some((i, '\'')) => {
+                    _ = self.consume();
+                    return Some(Ok((i, Tok::Quote, i + 1)));
+                }
+                Some((i, c)) if Lexer::is_string_quote(c) => return self.consume_string(i),
                 Some((i, c)) if Lexer::is_decimal_digit(c) => return self.consume_num(i),
                 Some((i, c)) if Lexer::is_op(c) => return self.consume_op(i),
                 Some((i, c)) if Lexer::is_symbol_char(c) => return self.consume_symbol(i),
@@ -165,7 +175,7 @@ impl<'input> Iterator for Lexer<'input> {
 
 #[test]
 fn lexer_works_properly() {
-    let source = "(atom 10 \"string\")";
+    let source = "(atom 10 \"string\" '(1 2 3))";
 
     Lexer::new(source).for_each(|t| println!("{:?}", t.unwrap().1));
 
@@ -174,7 +184,15 @@ fn lexer_works_properly() {
     assert_eq!(lex.next().unwrap().unwrap().1, Tok::Symbol("atom"));
     assert_eq!(lex.next().unwrap().unwrap().1, Tok::Num("10"));
     assert_eq!(lex.next().unwrap().unwrap().1, Tok::Str("string"));
+
+    assert_eq!(lex.next().unwrap().unwrap().1, Tok::Quote);
+    assert_eq!(lex.next().unwrap().unwrap().1, Tok::LeftParen);
+    assert_eq!(lex.next().unwrap().unwrap().1, Tok::Num("1"));
+    assert_eq!(lex.next().unwrap().unwrap().1, Tok::Num("2"));
+    assert_eq!(lex.next().unwrap().unwrap().1, Tok::Num("3"));
     assert_eq!(lex.next().unwrap().unwrap().1, Tok::RightParen);
 
-    assert_eq!(Lexer::new(source).count(), 5);
+    assert_eq!(lex.next().unwrap().unwrap().1, Tok::RightParen);
+
+    assert_eq!(Lexer::new(source).count(), 11);
 }

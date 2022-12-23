@@ -54,8 +54,10 @@ impl ToInfoStruct for Vec<Node> {
 
 impl ToInfoStruct for Node {
     fn to_info_struct(&self) -> ListOrAtomInfo {
+        // TODO: Quote atom and list should display a ' before they're printed
+        // and their values inside the json should reflect their new type
         return match self {
-            Node::Atom(a) => match a {
+            Node::Atom(a) | Node::QuoteAtom(a) => match a {
                 ceceo_llvm_parser::ast::Atom::Num(num) => ListOrAtomInfo::Atom(InfoStruct {
                     r#type: Num.to_string(),
                     value: Box::new(Atom::Num(*num)),
@@ -69,7 +71,7 @@ impl ToInfoStruct for Node {
                     value: Box::new(Atom::Str(str.to_owned())),
                 }),
             },
-            Node::List(list) => {
+            Node::List(list) | Node::QuoteList(list) => {
                 return nodes_to_info_structs(list);
             }
         };
