@@ -1,5 +1,4 @@
-use crate::binary_op::BinaryOp;
-use crate::get_atom_vals::GetAtomValues;
+use crate::{binary_op::BinaryOp, eval_binary_op::EvalBinaryOp};
 use ceceo_llvm_parser::{
     ast::{Atom, Node},
 };
@@ -18,27 +17,27 @@ fn get_op(c: char) -> Option<&'static BinaryOp> {
 }
 
 fn handle_sum(ers: Vec<EvalResult>) {
+    if ers.len() < 1 {
+        println!("{}", 0);
+        return;
+    }
+
+    handle_bop(ers)
+}
+
+fn handle_bop(ers: Vec<EvalResult>) {
     let atoms = extract_atoms_from_eval_res(ers).expect("");
     let first_atom = *atoms.first().unwrap();
     let first_disc = std::mem::discriminant(first_atom);
 
     match first_atom {
         Atom::Num(_) => {
-            let vals = GetAtomValues::<i32>::get_atom_vals(&atoms, first_disc).unwrap();
-            println!(
-                "{}",
-                vals.iter()
-                    .map(|n| n.to_string())
-                    .collect::<Vec<String>>()
-                    .join(" + ")
-            );
-            println!("{}", vals.iter().map(|v| *v).sum::<i32>());
+            println!("{}", EvalBinaryOp::<i32>::eval_bop(&atoms, first_disc, |acc, e| acc + e));
         }
         Atom::Str(_) => {
-            let vals = GetAtomValues::<String>::get_atom_vals(&atoms, first_disc).unwrap();
-            println!("{}", vals.iter().map(|v| &*(**v)).collect::<Vec<&str>>().join(""));
+            println!("{}", EvalBinaryOp::<String>::eval_bop(&atoms, first_disc, |acc, e| acc + &e));
         }
-        Atom::Symbol(_) => unimplemented!(),
+        _ => unimplemented!(),
     }
 }
 
