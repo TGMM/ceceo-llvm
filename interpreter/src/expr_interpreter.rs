@@ -1,4 +1,4 @@
-use crate::{binary_op::BinaryOp, eval_binary_op::EvalBinaryOp};
+use crate::{binary_op::BinaryOp, eval_binary_op::EvalBinaryOp, binary_op_impl::BinaryOpImpls};
 use ceceo_llvm_parser::{
     ast::{Atom, Node},
 };
@@ -10,19 +10,10 @@ pub enum EvalResult<'a> {
 }
 
 // const OPS: [char; 11] = ['+', '-', '*', '<', '>', '%', '\"', '=', '!', '&', '/'];
-const BIN_OPS: [BinaryOp; 1] = [BinaryOp::new('+', handle_sum)];
+const BIN_OPS: [BinaryOp; 1] = [BinaryOp::new('+', handle_bop)];
 
 fn get_op(c: char) -> Option<&'static BinaryOp> {
     BIN_OPS.iter().find(|bop| bop.op == c)
-}
-
-fn handle_sum(ers: Vec<EvalResult>) {
-    if ers.len() < 1 {
-        println!("{}", 0);
-        return;
-    }
-
-    handle_bop(ers)
 }
 
 fn handle_bop(ers: Vec<EvalResult>) {
@@ -32,10 +23,10 @@ fn handle_bop(ers: Vec<EvalResult>) {
 
     match first_atom {
         Atom::Num(_) => {
-            println!("{}", EvalBinaryOp::<i32>::eval_bop(&atoms, first_disc, |acc, e| acc + e));
+            println!("{}", BinaryOpImpls::<i32>::sum(&atoms, first_disc));
         }
         Atom::Str(_) => {
-            println!("{}", EvalBinaryOp::<String>::eval_bop(&atoms, first_disc, |acc, e| acc + &e));
+            println!("{}", BinaryOpImpls::<String>::sum(&atoms, first_disc));
         }
         _ => unimplemented!(),
     }

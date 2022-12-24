@@ -1,6 +1,7 @@
 #![feature(let_chains)]
 
 mod binary_op;
+mod binary_op_impl;
 mod eval_binary_op;
 pub mod expr_interpreter;
 mod get_atom_vals;
