@@ -4,6 +4,7 @@ mod binary_op_impl;
 mod eval_binary_op;
 pub mod expr_interpreter;
 mod get_atom_vals;
+mod numeric_bops;
 mod tests;
 
 use ceceo_llvm_parser::parse_ceceo;
