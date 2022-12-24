@@ -8,7 +8,7 @@ pub trait EvalBinaryOp<T> {
     fn eval_bop(&self, disc: Discriminant<Atom>, f: impl Fn(T, T) -> T) -> T;
 }
 
-impl EvalBinaryOp<i32> for Vec<&Atom> {
+impl EvalBinaryOp<i32> for Vec<Atom> {
     fn eval_bop(&self, disc: Discriminant<Atom>, reducer: impl Fn(i32, i32) -> i32) -> i32 {
         let vals = GetAtomValues::<i32>::get_atom_vals(self, disc).unwrap();
         let result = vals.iter().map(|v| **v).reduce(reducer).unwrap();
@@ -16,7 +16,7 @@ impl EvalBinaryOp<i32> for Vec<&Atom> {
     }
 }
 
-impl EvalBinaryOp<String> for Vec<&Atom> {
+impl EvalBinaryOp<String> for Vec<Atom> {
     fn eval_bop(
         &self,
         disc: Discriminant<Atom>,
