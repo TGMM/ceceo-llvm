@@ -1,5 +1,3 @@
-use std::{mem::Discriminant};
-
 use crate::{binary_op_impl::BinaryOpImpls};
 use ceceo_llvm_parser::{
     ast::{Atom, Node},
@@ -13,20 +11,34 @@ pub enum EvalResult<'a> {
 
 // const OPS: [char; 11] = ['+', '-', '*', '<', '>', '%', '\"', '=', '!', '&', '/'];
 
-enum Bops {
+pub enum Bops {
     Sum,
     Subtract,
     Mult,
+    Div,
 }
 
-type BopFn<T> = fn(&Vec<Atom>, disc: Discriminant<Atom>) -> T;
-fn get_bop<T>(bop: Bops) -> BopFn<T> where Vec<Atom>: BinaryOpImpls<T>
-{
-    return match bop {
-        Bops::Sum => <Vec<Atom> as BinaryOpImpls<T>>::sum,
-        Bops::Subtract => <Vec<Atom> as BinaryOpImpls<T>>::subtract,
-        Bops::Mult => <Vec<Atom> as BinaryOpImpls<T>>::mult,
-    };
+impl From<char> for Bops {
+    fn from(c: char) -> Self {
+        match c {
+            '+' => Bops::Sum,
+            '-' => Bops::Subtract,
+            '*' => Bops::Mult,
+            '/' => Bops::Div,
+            _ => panic!("Unknown operator")
+        }
+    }
+}
+
+impl Into<char> for Bops {
+    fn into(self) -> char {
+        match self {
+            Bops::Sum => '+',
+            Bops::Subtract => '-',
+            Bops::Mult => '*',
+            Bops::Div => '/',
+        }
+    }
 }
 
 fn handle_bop(bop: Bops, ers: Vec<EvalResult>) -> Atom {
@@ -36,12 +48,12 @@ fn handle_bop(bop: Bops, ers: Vec<EvalResult>) -> Atom {
 
     match first_atom {
         Atom::Num(_) => {
-            let result = (get_bop(bop))(&atoms, first_disc);
+            let result = atoms.perform_bop(bop, first_disc);
             println!("{}", result);
             return Atom::Num(result);
         }
         Atom::Str(_) => {
-            let result = (get_bop(bop))(&atoms, first_disc); 
+            let result = atoms.perform_bop(bop, first_disc); 
             println!("{}", result);
             return Atom::Str(result);
         }
@@ -74,7 +86,7 @@ fn eval_node(node: &Node) -> EvalResult {
     };
 }
 
-fn handle_list(list: &Vec<Node>) -> EvalResult {
+pub fn handle_list(list: &Vec<Node>) -> EvalResult {
     if list.len() < 1 {
         panic!("Missing procedure expression");
     }
@@ -89,18 +101,8 @@ fn handle_list(list: &Vec<Node>) -> EvalResult {
        let Some(first) = sym.chars().nth(0)
     {
         let eval_args: Vec<EvalResult> = arg_list.iter().map(eval_node).collect();
-        match first {
-            '+' => {
-                return EvalResult::Atom(handle_bop(Bops::Sum, eval_args));
-            }
-            '*' => {
-                return EvalResult::Atom(handle_bop(Bops::Mult, eval_args));
-            }
-            '-' => {
-                return EvalResult::Atom(handle_bop(Bops::Subtract, eval_args));
-            }
-            _ => panic!("Unknown operator")
-        }
+        let selected_bop = Bops::from(first);
+        return EvalResult::Atom(handle_bop(selected_bop, eval_args));
     } else {
         panic!("Invalid procedure expression");
     }
