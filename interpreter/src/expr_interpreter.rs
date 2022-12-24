@@ -1,4 +1,4 @@
-use crate::{binary_op_impl::BinaryOpImpls, numeric_bops::NumericBops};
+use crate::{procs_impl::ProcImpls, numeric_procs::NumericProcs};
 use ceceo_llvm_parser::{
     ast::{Atom, Node},
 };
@@ -9,17 +9,23 @@ pub enum EvalResult<'a> {
     QuoteList(&'a Vec<Node>),
 }
 
+#[derive(Debug, PartialEq)]
+pub enum ProcOrSym {
+    Symbol,
+    Proc(Atom),
+}
+
 // const OPS: [char; 11] = ['+', '-', '*', '<', '>', '%', '\"', '=', '!', '&', '/'];
 
-fn handle_bop(c: char, ers: Vec<EvalResult>) -> Atom {
-    if let Ok(nbop) = NumericBops::try_from(c) {
-        return handle_numeric_bop(nbop, ers);
+fn handle_procedure(c: &str, ers: Vec<EvalResult>) -> ProcOrSym {
+    if let Ok(nbop) = NumericProcs::try_from(c) {
+        return ProcOrSym::Proc(handle_numeric_proc(nbop, ers));
     } else {
-        unimplemented!();
+        return ProcOrSym::Symbol;
     }
 }
 
-fn handle_numeric_bop(bop: NumericBops, ers: Vec<EvalResult>) -> Atom {
+fn handle_numeric_proc(bop: NumericProcs, ers: Vec<EvalResult>) -> Atom {
     let atoms = extract_atoms_from_eval_res(ers).expect("");
 
     let result = atoms.perform_bop(bop);
@@ -63,11 +69,14 @@ pub fn handle_list(list: &Vec<Node>) -> EvalResult {
     }
 
     if let Node::Atom(atom) = procedure && 
-       let Atom::Symbol(sym) = atom && 
-       let Some(first) = sym.chars().nth(0)
+       let Atom::Symbol(sym) = atom
     {
         let eval_args: Vec<EvalResult> = arg_list.iter().map(eval_node).collect();
-        return EvalResult::Atom(handle_bop(first, eval_args));
+        if let ProcOrSym::Proc(p) = handle_procedure(sym, eval_args) {
+            return EvalResult::Atom(p);
+        }
+
+        return EvalResult::Atom(atom.clone());
     } else {
         panic!("Invalid procedure expression");
     }
