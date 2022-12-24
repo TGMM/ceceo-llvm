@@ -1,1 +1,1 @@
-mod binary_op_tests;
+mod proc_tests;

@@ -1,4 +1,4 @@
-use crate::{procs_impl::ProcImpls, numeric_procs::NumericProcs};
+use crate::{procs_impl::ProcImpls, numeric_procs::NumericProcs, string_procs::StringProcs};
 use ceceo_llvm_parser::{
     ast::{Atom, Node},
 };
@@ -18,8 +18,10 @@ pub enum ProcOrSym {
 // const OPS: [char; 11] = ['+', '-', '*', '<', '>', '%', '\"', '=', '!', '&', '/'];
 
 fn handle_procedure(c: &str, ers: Vec<EvalResult>) -> ProcOrSym {
-    if let Ok(nbop) = NumericProcs::try_from(c) {
-        return ProcOrSym::Proc(handle_numeric_proc(nbop, ers));
+    if let Ok(nproc) = NumericProcs::try_from(c) {
+        return ProcOrSym::Proc(handle_numeric_proc(nproc, ers));
+    } else if let Ok(sproc) = StringProcs::try_from(c) {
+        return ProcOrSym::Proc(handle_string_proc(sproc, ers));
     } else {
         return ProcOrSym::Symbol;
     }
@@ -28,9 +30,16 @@ fn handle_procedure(c: &str, ers: Vec<EvalResult>) -> ProcOrSym {
 fn handle_numeric_proc(bop: NumericProcs, ers: Vec<EvalResult>) -> Atom {
     let atoms = extract_atoms_from_eval_res(ers).expect("");
 
-    let result = atoms.perform_bop(bop);
+    let result = atoms.perform_proc(bop);
     println!("{}", result);
     return Atom::Num(result);
+}
+
+fn handle_string_proc(bop: StringProcs, ers: Vec<EvalResult>) -> Atom {
+    let atoms = extract_atoms_from_eval_res(ers).expect("");
+    let result = atoms.perform_proc(bop);
+    println!("{}", result);
+    return Atom::Str(result);
 }
 
 fn extract_atoms_from_eval_res(ers: Vec<EvalResult>) -> Result<Vec<Atom>, ()> {

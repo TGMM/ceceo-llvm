@@ -89,10 +89,6 @@ impl<'input> Lexer<'input> {
         self.consume_while(start_idx, Lexer::is_symbol_char, Tok::Symbol(""))
     }
 
-    fn consume_op(&mut self, start_idx: usize) -> Option<LexerItem<'input>> {
-        self.consume_while(start_idx, Lexer::is_op, Tok::Symbol(""))
-    }
-
     fn consume_num(&mut self, start_idx: usize) -> Option<LexerItem<'input>> {
         self.consume_while(start_idx, Lexer::is_decimal_digit, Tok::Num(""))
     }
@@ -111,7 +107,11 @@ impl<'input> Lexer<'input> {
 
     // In case we change our minds later
     pub fn is_symbol_char(ch: char) -> bool {
-        ch.is_ascii_alphabetic()
+        !Self::is_whitespace(ch)
+            && !Self::is_quote(ch)
+            && !Self::is_string_quote(ch)
+            && ch != '('
+            && ch != ')'
     }
 
     pub fn is_decimal_digit(ch: char) -> bool {
@@ -124,11 +124,6 @@ impl<'input> Lexer<'input> {
 
     pub fn is_quote(ch: char) -> bool {
         '\'' == ch
-    }
-
-    pub fn is_op(c: char) -> bool {
-        const OPS: [char; 11] = ['+', '-', '*', '<', '>', '%', '\"', '=', '!', '&', '/'];
-        return OPS.contains(&c);
     }
 
     pub fn is_whitespace(c: char) -> bool {
@@ -158,7 +153,6 @@ impl<'input> Iterator for Lexer<'input> {
                 }
                 Some((i, c)) if Lexer::is_string_quote(c) => return self.consume_string(i),
                 Some((i, c)) if Lexer::is_decimal_digit(c) => return self.consume_num(i),
-                Some((i, c)) if Lexer::is_op(c) => return self.consume_op(i),
                 Some((i, c)) if Lexer::is_symbol_char(c) => return self.consume_symbol(i),
                 Some((i, c)) if Lexer::is_whitespace(c) => {
                     self.consume_whitespace(i);
@@ -175,7 +169,7 @@ impl<'input> Iterator for Lexer<'input> {
 
 #[test]
 fn lexer_works_properly() {
-    let source = "(atom 10 \"string\" '(1 2 3))";
+    let source = "(atom 10 \"string\" '(1 2 3) string-append)";
 
     Lexer::new(source).for_each(|t| println!("{:?}", t.unwrap().1));
 
@@ -192,7 +186,9 @@ fn lexer_works_properly() {
     assert_eq!(lex.next().unwrap().unwrap().1, Tok::Num("3"));
     assert_eq!(lex.next().unwrap().unwrap().1, Tok::RightParen);
 
+    assert_eq!(lex.next().unwrap().unwrap().1, Tok::Symbol("string-append"));
+
     assert_eq!(lex.next().unwrap().unwrap().1, Tok::RightParen);
 
-    assert_eq!(Lexer::new(source).count(), 11);
+    assert_eq!(Lexer::new(source).count(), 12);
 }

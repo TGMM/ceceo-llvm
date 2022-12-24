@@ -14,8 +14,7 @@ extern {
         "'" => Tok::Quote,
         Symbol => Tok::Symbol(<&'input str>),
         Str => Tok::Str(<&'input str>),
-        Num => Tok::Num(<&'input str>),
-        Op => Tok::Op(<&'input str>),
+        Num => Tok::Num(<&'input str>)
     }
 }
 
@@ -32,6 +31,5 @@ AtomOrList: Node = {
 Atom: Atom = {
     Symbol => Atom::Symbol(<>.to_string()),
     Str => Atom::Str(<>.to_string()),
-    Num => Atom::Num(i32::from_str(<>).unwrap()),
-    Op => Atom::Symbol(<>.to_string())
+    Num => Atom::Num(i32::from_str(<>).unwrap())
 }
