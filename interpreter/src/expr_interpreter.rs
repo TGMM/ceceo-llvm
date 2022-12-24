@@ -76,6 +76,7 @@ pub fn handle_list(list: &Vec<Node>) -> EvalResult {
             return EvalResult::Atom(p);
         }
 
+        // TODO: Handle user-defined function
         return EvalResult::Atom(atom.clone());
     } else {
         panic!("Invalid procedure expression");
