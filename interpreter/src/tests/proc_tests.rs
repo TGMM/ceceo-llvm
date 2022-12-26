@@ -92,3 +92,14 @@ fn or_returns_true_if_no_args() {
 
     assert_eq!(result, EvalResult::Atom(Atom::Bool(false)))
 }
+
+#[test]
+fn and_works_with_lists() {
+    let program = "(and #t (+ 3 2) (or #t #f) (* 10 10))";
+
+    let parsed_ceceo = parse_ceceo(program).unwrap();
+    let expr = parsed_ceceo.first().unwrap();
+    let result = handle_list(expr);
+
+    assert_eq!(result, EvalResult::Atom(Atom::Num(100)))
+}

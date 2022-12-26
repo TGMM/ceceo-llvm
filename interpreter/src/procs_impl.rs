@@ -1,9 +1,8 @@
 use crate::{
-    eval_proc::EvalProc, generic_procs::GenericProcs, numeric_procs::NumericProcs,
-    string_procs::StringProcs,
+    eval_iter::EvalIter, eval_proc::EvalProc, expr_interpreter::EvalResult,
+    generic_procs::GenericProcs, numeric_procs::NumericProcs, string_procs::StringProcs,
 };
-use parser::ast::Atom;
-use std::mem::Discriminant;
+use parser::ast::{Atom, Node};
 
 const ZERO_ARGS: &str = "Invalid number of args: 0";
 
@@ -11,97 +10,104 @@ pub trait ProcImpls<T, U> {
     fn perform_proc(&self, proc_type: U) -> T;
 }
 
-impl ProcImpls<i32, NumericProcs> for Vec<Atom> {
+impl ProcImpls<i32, NumericProcs> for &[Node] {
     fn perform_proc(&self, proc_type: NumericProcs) -> i32 {
-        fn sum(va: &[Atom], disc: Option<Discriminant<Atom>>) -> i32 {
-            if va.is_empty() {
+        fn sum(node_slice: &[Node]) -> i32 {
+            if node_slice.is_empty() {
                 return 0;
             }
 
-            EvalProc::<i32>::eval_proc(&va, disc.expect(ZERO_ARGS), |acc, e| acc + e)
+            EvalProc::<i32>::eval_proc(&node_slice, |acc, e| acc + e)
         }
 
-        fn mult(va: &[Atom], disc: Option<Discriminant<Atom>>) -> i32 {
-            if va.is_empty() {
+        fn mult(node_slice: &[Node]) -> i32 {
+            if node_slice.is_empty() {
                 return 1;
             }
 
-            EvalProc::<i32>::eval_proc(&va, disc.expect(ZERO_ARGS), |acc, e| acc * e)
+            EvalProc::<i32>::eval_proc(&node_slice, |acc, e| acc * e)
         }
 
-        fn subtract(va: &[Atom], disc: Option<Discriminant<Atom>>) -> i32 {
-            if va.len() == 1 && let Atom::Num(n) = va.first().unwrap() {
-                return -n;
+        fn subtract(node_slice: &[Node]) -> i32 {
+            let ret = EvalProc::<i32>::eval_proc(&node_slice, |acc, e| acc - e);
+            if node_slice.len() == 1 {
+                return -ret;
             }
 
-            EvalProc::<i32>::eval_proc(&va, disc.expect(ZERO_ARGS), |acc, e| acc - e)
+            return ret;
         }
 
-        fn div(va: &[Atom], disc: Option<Discriminant<Atom>>) -> i32 {
-            if va.len() == 1 && let Atom::Num(n) = va.first().unwrap() {
-                return 1 / n;
+        fn div(node_slice: &[Node]) -> i32 {
+            let ret = EvalProc::<i32>::eval_proc(&node_slice, |acc, e| acc / e);
+            if node_slice.len() == 1 {
+                return 1 / ret;
             }
 
-            EvalProc::<i32>::eval_proc(&va, disc.expect(ZERO_ARGS), |acc, e| acc / e)
+            return ret;
         }
-
-        let first_atom = self.first();
-        let disc = first_atom.map(std::mem::discriminant);
 
         match proc_type {
-            NumericProcs::Sum => sum(self, disc),
-            NumericProcs::Subtract => subtract(self, disc),
-            NumericProcs::Mult => mult(self, disc),
-            NumericProcs::Div => div(self, disc),
+            NumericProcs::Sum => sum(self),
+            NumericProcs::Subtract => subtract(self),
+            NumericProcs::Mult => mult(self),
+            NumericProcs::Div => div(self),
         }
     }
 }
 
-impl ProcImpls<String, StringProcs> for Vec<Atom> {
+impl ProcImpls<String, StringProcs> for &[Node] {
     fn perform_proc(&self, bop_type: StringProcs) -> String {
-        fn append_strings(va: &[Atom], disc: Option<Discriminant<Atom>>) -> String {
-            EvalProc::<String>::eval_proc(&va, disc.expect(ZERO_ARGS), |acc, e| acc + &e)
+        fn append_strings(node_slice: &[Node]) -> String {
+            if node_slice.len() == 1 {
+                return "".to_string();
+            }
+            
+            EvalProc::<String>::eval_proc(&node_slice, |acc, e| acc + &e)
         }
-
-        let first_atom = self.first();
-        let disc = first_atom.map(std::mem::discriminant);
 
         match bop_type {
-            StringProcs::Append => append_strings(self, disc),
+            StringProcs::Append => append_strings(self),
         }
     }
 }
 
-impl ProcImpls<Atom, GenericProcs> for Vec<Atom> {
-    fn perform_proc(&self, proc_type: GenericProcs) -> Atom {
-        fn and(va: &[Atom]) -> Atom {
-            if va.is_empty() {
-                return Atom::Bool(true);
+impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
+    fn perform_proc<'b>(&'b self, proc_type: GenericProcs) -> EvalResult {
+        fn and(node_slice: &[Node]) -> EvalResult {
+            const DEFAULT: EvalResult = EvalResult::Atom(Atom::Bool(true));
+            let mut ret = DEFAULT;
+
+            for n in node_slice.iter_eval() {
+                if let EvalResult::Atom(ref a) = n 
+                && let Atom::Bool(b) = a 
+                && b == &false {
+                    return EvalResult::Atom(Atom::Bool(false));
+                } else {
+                    ret = n;
+                }
             }
 
-            if va.contains(&Atom::Bool(false)) {
-                return Atom::Bool(false);
-            }
-
-            return va.last().unwrap().to_owned();
+            return ret;
         }
 
-        fn or(va: &[Atom]) -> Atom {
-            if va.is_empty() {
-                return Atom::Bool(false);
+        fn or(node_slice: &[Node]) -> EvalResult {
+            const DEFAULT: EvalResult = EvalResult::Atom(Atom::Bool(false));
+
+            for n in node_slice.iter_eval() {
+                if let EvalResult::Atom(ref a) = &n 
+                && let Atom::Bool(b) = a 
+                && b == &false {
+                    continue
+                } else {
+                    return n;
+                }
             }
 
-            let first = va.first().unwrap();
-            if first != &Atom::Bool(false) {
-                return first.to_owned();
-            }
-
-            let va_without_first = &va[1..];
-            return or(va_without_first);
+            return DEFAULT;
         }
 
-        fn if_proc(va: &[Atom]) -> Atom {
-            todo!("{va:?}")
+        fn if_proc(node_slice: &[Node]) -> EvalResult {
+            todo!("{node_slice:?}")
         }
 
         match proc_type {

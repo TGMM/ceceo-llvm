@@ -8,10 +8,10 @@
 #![allow(clippy::cargo_common_metadata)]
 #![allow(clippy::missing_errors_doc)]
 
+mod eval_iter;
 mod eval_proc;
 pub mod expr_interpreter;
 mod generic_procs;
-mod get_atom_vals;
 mod numeric_procs;
 mod procs_impl;
 mod string_procs;

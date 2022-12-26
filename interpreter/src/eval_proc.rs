@@ -1,29 +1,37 @@
-use std::mem::Discriminant;
+use parser::ast::{Atom, Node};
 
-use parser::ast::Atom;
-
-use crate::get_atom_vals::GetAtomValues;
+use crate::{eval_iter::EvalIter, expr_interpreter::EvalResult};
 
 pub trait EvalProc<T> {
-    fn eval_proc(&self, disc: Discriminant<Atom>, f: impl Fn(T, T) -> T) -> T;
+    fn eval_proc(&self, f: impl Fn(T, T) -> T) -> T;
 }
 
-impl EvalProc<i32> for &[Atom] {
-    fn eval_proc(&self, disc: Discriminant<Atom>, reducer: impl Fn(i32, i32) -> i32) -> i32 {
-        let vals = GetAtomValues::<i32>::get_atom_vals(self, disc).unwrap();
-        let result = vals.iter().map(|v| **v).reduce(reducer).unwrap();
-        return result;
+impl EvalProc<i32> for &[Node] {
+    fn eval_proc(&self, reducer: impl Fn(i32, i32) -> i32) -> i32 {
+        self.iter_eval()
+            .map(|er| {
+                if let EvalResult::Atom(atom) = er && let Atom::Num(num) = atom {
+                return num;
+            } else {
+                panic!("Incorrect type: Expected number");
+            }
+            })
+            .reduce(reducer)
+            .unwrap()
     }
 }
 
-impl EvalProc<String> for &[Atom] {
-    fn eval_proc(
-        &self,
-        disc: Discriminant<Atom>,
-        reducer: impl Fn(String, String) -> String,
-    ) -> String {
-        let vals = GetAtomValues::<String>::get_atom_vals(self, disc).unwrap();
-        let result = vals.iter().map(|&v| v.clone()).reduce(reducer).unwrap();
-        return result;
+impl EvalProc<String> for &[Node] {
+    fn eval_proc(&self, reducer: impl Fn(String, String) -> String) -> String {
+        self.iter_eval()
+            .map(|er| {
+                if let EvalResult::Atom(atom) = er && let Atom::Str(st) = atom {
+                return st;
+            } else {
+                panic!("Incorrect type: Expected string");
+            }
+            })
+            .reduce(reducer)
+            .unwrap()
     }
 }

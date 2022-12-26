@@ -1,102 +1,72 @@
-use crate::{procs_impl::ProcImpls, numeric_procs::NumericProcs, string_procs::StringProcs, generic_procs::GenericProcs};
-use parser::{
-    ast::{Atom, Node},
+use crate::{
+    generic_procs::GenericProcs, numeric_procs::NumericProcs, procs_impl::ProcImpls,
+    string_procs::StringProcs,
 };
+use parser::ast::{Atom, Node};
 
-#[derive(Debug, PartialEq)]
-pub enum EvalResult<'a> {
+#[derive(Debug, PartialEq, Clone)]
+pub enum EvalResult {
     Atom(Atom),
-    QuoteList(&'a Vec<Node>),
-}
-
-#[derive(Debug, PartialEq)]
-pub enum ProcOrSym {
-    Symbol,
-    Proc(Atom),
+    QuoteAtom(Atom),
+    QuoteList(Vec<Node>),
 }
 
 // const OPS: [char; 11] = ['+', '-', '*', '<', '>', '%', '\"', '=', '!', '&', '/'];
+const INVALID_PROC: &str = "Invalid procedure expression";
 
-fn handle_procedure(c: &str, ers: Vec<EvalResult>) -> ProcOrSym {
+fn handle_procedure<'a>(c: &str, node_args: &'a [Node]) -> EvalResult {
     if let Ok(nproc) = NumericProcs::try_from(c) {
-        return ProcOrSym::Proc(handle_numeric_proc(nproc, ers));
+        return EvalResult::Atom(handle_numeric_proc(nproc, node_args));
     } else if let Ok(sproc) = StringProcs::try_from(c) {
-        return ProcOrSym::Proc(handle_string_proc(sproc, ers));
+        return EvalResult::Atom(handle_string_proc(sproc, node_args));
     } else if let Ok(gproc) = GenericProcs::try_from(c) {
-        return ProcOrSym::Proc(handle_generic_proc(gproc, ers));
+        return handle_generic_proc(gproc, node_args);
     } else {
-        return ProcOrSym::Symbol;
+        // TODO: Handle user defined functions
+        panic!("{INVALID_PROC}");
     }
 }
 
-fn handle_numeric_proc(proc: NumericProcs, ers: Vec<EvalResult>) -> Atom {
-    let atoms = extract_atoms_from_eval_res(ers).expect("");
-    let result = atoms.perform_proc(proc);
+fn handle_numeric_proc(proc: NumericProcs, node_args: &[Node]) -> Atom {
+    let result = node_args.perform_proc(proc);
     println!("{result}");
     return Atom::Num(result);
 }
 
-fn handle_string_proc(proc: StringProcs, ers: Vec<EvalResult>) -> Atom {
-    let atoms = extract_atoms_from_eval_res(ers).expect("");
-    let result = atoms.perform_proc(proc);
+fn handle_string_proc(proc: StringProcs, node_args: &[Node]) -> Atom {
+    let result = node_args.perform_proc(proc);
     println!("{result}");
     return Atom::Str(result);
 }
 
-fn handle_generic_proc(proc: GenericProcs, ers: Vec<EvalResult>) -> Atom {
-    let atoms = extract_atoms_from_eval_res(ers).expect("");
-    let result = atoms.perform_proc(proc);
+fn handle_generic_proc(proc: GenericProcs, node_args: &[Node]) -> EvalResult {
+    let result = node_args.perform_proc(proc);
     println!("{result:?}");
     return result;
 }
 
-fn extract_atoms_from_eval_res(ers: Vec<EvalResult>) -> Result<Vec<Atom>, ()> {
-    let mut atoms = vec![];
-    for er in ers {
-        match er {
-            EvalResult::Atom(a) => {
-                atoms.push(a);
-            },
-            EvalResult::QuoteList(_) => {
-                return Err(());
-            },
-        }
+fn handle_proc_atom(proc_atom: Atom, arg_list: &[Node]) -> EvalResult {
+    if let Atom::Symbol(sym) = proc_atom {
+        return handle_procedure(&sym, arg_list);
     }
 
-    return Ok(atoms);
+    panic!("{INVALID_PROC}");
 }
 
-fn eval_node(node: &Node) -> EvalResult {
-    return match node {
-        Node::Atom(a) => EvalResult::Atom(a.clone()),
-        Node::List(l) => handle_list(l),
-        Node::QuoteList(ql) => EvalResult::QuoteList(ql),
-        Node::QuoteAtom(_) => panic!("Invalid argument"),
-    };
-}
-
-pub fn handle_list(list: &Vec<Node>) -> EvalResult {
+pub fn handle_list(list: &[Node]) -> EvalResult {
     if list.is_empty() {
         panic!("Missing procedure expression");
     }
 
     let (procedure, arg_list) = list.split_first().unwrap();
-    if let Node::List(_) | Node::QuoteList(_) = procedure {
-        panic!("Invalid procedure expression");
-    }
-
-    if let Node::Atom(atom) = procedure && 
-       let Atom::Symbol(sym) = atom
-    {
-        let eval_args: Vec<EvalResult> = arg_list.iter().map(eval_node).collect();
-        if let ProcOrSym::Proc(p) = handle_procedure(sym, eval_args) {
-            return EvalResult::Atom(p);
-        }
-
-        // TODO: Handle user-defined function
-        return EvalResult::Atom(atom.clone());
-    } else {
-        panic!("Invalid procedure expression");
+    match procedure {
+        Node::Atom(atom) | Node::QuoteAtom(atom) => handle_proc_atom(atom.clone(), arg_list),
+        Node::List(list) => match handle_list(list) {
+            EvalResult::Atom(atom) => handle_proc_atom(atom, arg_list),
+            EvalResult::QuoteList(_) => panic!("{INVALID_PROC}"),
+            EvalResult::QuoteAtom(_) => todo!(),
+        },
+        Node::QuoteList(_) => panic!("{INVALID_PROC}"),
     }
 }
 
