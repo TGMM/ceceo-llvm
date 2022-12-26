@@ -3,7 +3,7 @@ use std::{iter::Peekable, str::CharIndices};
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 type LexerItem<'input> = Spanned<Tok<'input>, usize, LexicalError>;
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Tok<'input> {
     Whitespace,
     LeftParen,
@@ -15,7 +15,7 @@ pub enum Tok<'input> {
     Op(&'input str),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum LexicalError {
     // Not possible
 }
@@ -26,6 +26,7 @@ pub struct Lexer<'input> {
 }
 
 impl<'input> Lexer<'input> {
+    #[must_use]
     pub fn new(input: &'input str) -> Self {
         Lexer {
             chars: input.char_indices().peekable(),
@@ -106,6 +107,7 @@ impl<'input> Lexer<'input> {
     }
 
     // In case we change our minds later
+    #[must_use]
     pub fn is_symbol_char(ch: char) -> bool {
         !Self::is_whitespace(ch)
             && !Self::is_quote(ch)
@@ -114,18 +116,22 @@ impl<'input> Lexer<'input> {
             && ch != ')'
     }
 
-    pub fn is_decimal_digit(ch: char) -> bool {
+    #[must_use]
+    pub const fn is_decimal_digit(ch: char) -> bool {
         ch.is_ascii_digit()
     }
 
-    pub fn is_string_quote(ch: char) -> bool {
+    #[must_use]
+    pub const fn is_string_quote(ch: char) -> bool {
         '"' == ch
     }
 
-    pub fn is_quote(ch: char) -> bool {
+    #[must_use]
+    pub const fn is_quote(ch: char) -> bool {
         '\'' == ch
     }
 
+    #[must_use]
     pub fn is_whitespace(c: char) -> bool {
         const WHITESPACE_CHARS: [char; 3] = [' ', '\n', '\t'];
         return WHITESPACE_CHARS.contains(&c);
@@ -137,7 +143,7 @@ impl<'input> Iterator for Lexer<'input> {
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            let ch = self.chars.peek().cloned();
+            let ch = self.chars.peek().copied();
             match ch {
                 Some((i, '(')) => {
                     _ = self.consume();

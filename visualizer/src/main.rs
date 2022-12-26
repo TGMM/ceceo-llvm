@@ -1,4 +1,11 @@
+#![deny(clippy::all)]
+#![warn(clippy::pedantic)]
+#![warn(clippy::nursery)]
+#![warn(clippy::cargo)]
 #![allow(clippy::needless_return)]
+#![allow(clippy::missing_docs_in_private_items)]
+#![allow(clippy::cargo_common_metadata)]
+#![allow(clippy::missing_errors_doc)]
 
 pub mod ast_serialize;
 

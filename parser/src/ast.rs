@@ -6,7 +6,7 @@ pub enum Node {
     QuoteAtom(Atom),
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Atom {
     Num(i32),
     Symbol(String),
