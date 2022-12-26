@@ -1,5 +1,5 @@
 use crate::{
-    eval_binary_op::EvalProc, generic_procs::GenericProcs, numeric_procs::NumericProcs,
+    eval_proc::EvalProc, generic_procs::GenericProcs, numeric_procs::NumericProcs,
     string_procs::StringProcs,
 };
 use parser::ast::Atom;
