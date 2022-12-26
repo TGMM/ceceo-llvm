@@ -13,36 +13,36 @@ pub trait ProcImpls<T, U> {
 
 impl ProcImpls<i32, NumericProcs> for Vec<Atom> {
     fn perform_proc(&self, proc_type: NumericProcs) -> i32 {
-        fn sum(va: &Vec<Atom>, disc: Option<Discriminant<Atom>>) -> i32 {
+        fn sum(va: &[Atom], disc: Option<Discriminant<Atom>>) -> i32 {
             if va.is_empty() {
                 return 0;
             }
 
-            EvalProc::<i32>::eval_bop(va, disc.expect(ZERO_ARGS), |acc, e| acc + e)
+            EvalProc::<i32>::eval_proc(&va, disc.expect(ZERO_ARGS), |acc, e| acc + e)
         }
 
-        fn mult(va: &Vec<Atom>, disc: Option<Discriminant<Atom>>) -> i32 {
+        fn mult(va: &[Atom], disc: Option<Discriminant<Atom>>) -> i32 {
             if va.is_empty() {
                 return 1;
             }
 
-            EvalProc::<i32>::eval_bop(va, disc.expect(ZERO_ARGS), |acc, e| acc * e)
+            EvalProc::<i32>::eval_proc(&va, disc.expect(ZERO_ARGS), |acc, e| acc * e)
         }
 
-        fn subtract(va: &Vec<Atom>, disc: Option<Discriminant<Atom>>) -> i32 {
+        fn subtract(va: &[Atom], disc: Option<Discriminant<Atom>>) -> i32 {
             if va.len() == 1 && let Atom::Num(n) = va.first().unwrap() {
                 return -n;
             }
 
-            EvalProc::<i32>::eval_bop(va, disc.expect(ZERO_ARGS), |acc, e| acc - e)
+            EvalProc::<i32>::eval_proc(&va, disc.expect(ZERO_ARGS), |acc, e| acc - e)
         }
 
-        fn div(va: &Vec<Atom>, disc: Option<Discriminant<Atom>>) -> i32 {
+        fn div(va: &[Atom], disc: Option<Discriminant<Atom>>) -> i32 {
             if va.len() == 1 && let Atom::Num(n) = va.first().unwrap() {
                 return 1 / n;
             }
 
-            EvalProc::<i32>::eval_bop(va, disc.expect(ZERO_ARGS), |acc, e| acc / e)
+            EvalProc::<i32>::eval_proc(&va, disc.expect(ZERO_ARGS), |acc, e| acc / e)
         }
 
         let first_atom = self.first();
@@ -59,8 +59,8 @@ impl ProcImpls<i32, NumericProcs> for Vec<Atom> {
 
 impl ProcImpls<String, StringProcs> for Vec<Atom> {
     fn perform_proc(&self, bop_type: StringProcs) -> String {
-        fn append_strings(va: &Vec<Atom>, disc: Option<Discriminant<Atom>>) -> String {
-            EvalProc::<String>::eval_bop(va, disc.expect(ZERO_ARGS), |acc, e| acc + &e)
+        fn append_strings(va: &[Atom], disc: Option<Discriminant<Atom>>) -> String {
+            EvalProc::<String>::eval_proc(&va, disc.expect(ZERO_ARGS), |acc, e| acc + &e)
         }
 
         let first_atom = self.first();
@@ -74,7 +74,7 @@ impl ProcImpls<String, StringProcs> for Vec<Atom> {
 
 impl ProcImpls<Atom, GenericProcs> for Vec<Atom> {
     fn perform_proc(&self, proc_type: GenericProcs) -> Atom {
-        fn and(va: &Vec<Atom>) -> Atom {
+        fn and(va: &[Atom]) -> Atom {
             if va.is_empty() {
                 return Atom::Bool(true);
             }
@@ -100,9 +100,14 @@ impl ProcImpls<Atom, GenericProcs> for Vec<Atom> {
             return or(va_without_first);
         }
 
+        fn if_proc(va: &[Atom]) -> Atom {
+            todo!("{va:?}")
+        }
+
         match proc_type {
             GenericProcs::And => and(self),
             GenericProcs::Or => or(self),
+            GenericProcs::If => if_proc(self),
         }
     }
 }

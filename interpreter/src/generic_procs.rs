@@ -1,6 +1,7 @@
 pub enum GenericProcs {
     And,
     Or,
+    If,
 }
 
 impl<'a> TryFrom<&'a str> for GenericProcs {
@@ -9,6 +10,7 @@ impl<'a> TryFrom<&'a str> for GenericProcs {
         match c {
             "and" => Ok(GenericProcs::And),
             "or" => Ok(GenericProcs::Or),
+            "if" => Ok(GenericProcs::If),
             _ => Err("Unknown operator"),
         }
     }
@@ -19,6 +21,7 @@ impl<'a> From<GenericProcs> for &'a str {
         match val {
             GenericProcs::And => "and",
             GenericProcs::Or => "or",
+            GenericProcs::If => "if",
         }
     }
 }

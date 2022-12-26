@@ -8,10 +8,10 @@ pub trait GetAtomValues<T> {
 
 const DIFFERENT_DISC_ERR: &str = "Different discriminants found";
 
-impl GetAtomValues<i32> for Vec<Atom> {
+impl GetAtomValues<i32> for &[Atom] {
     fn get_atom_vals(&self, disc: Discriminant<Atom>) -> Result<Vec<&i32>, &'static str> {
         let mut atom_vals = vec![];
-        for atom in self {
+        for atom in self.iter() {
             let atom_disc = std::mem::discriminant(atom);
             if atom_disc != disc {
                 return Err(DIFFERENT_DISC_ERR);
@@ -27,10 +27,10 @@ impl GetAtomValues<i32> for Vec<Atom> {
     }
 }
 
-impl GetAtomValues<String> for Vec<Atom> {
+impl GetAtomValues<String> for &[Atom] {
     fn get_atom_vals(&self, disc: Discriminant<Atom>) -> Result<Vec<&String>, &'static str> {
         let mut atom_vals = vec![];
-        for atom in self {
+        for atom in self.iter() {
             let atom_disc = std::mem::discriminant(atom);
             if atom_disc != disc {
                 return Err(DIFFERENT_DISC_ERR);
