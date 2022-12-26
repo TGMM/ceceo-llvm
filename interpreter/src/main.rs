@@ -10,6 +10,7 @@
 
 mod eval_binary_op;
 pub mod expr_interpreter;
+mod generic_procs;
 mod get_atom_vals;
 mod numeric_procs;
 mod procs_impl;

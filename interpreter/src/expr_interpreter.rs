@@ -1,4 +1,4 @@
-use crate::{procs_impl::ProcImpls, numeric_procs::NumericProcs, string_procs::StringProcs};
+use crate::{procs_impl::ProcImpls, numeric_procs::NumericProcs, string_procs::StringProcs, generic_procs::GenericProcs};
 use parser::{
     ast::{Atom, Node},
 };
@@ -22,24 +22,32 @@ fn handle_procedure(c: &str, ers: Vec<EvalResult>) -> ProcOrSym {
         return ProcOrSym::Proc(handle_numeric_proc(nproc, ers));
     } else if let Ok(sproc) = StringProcs::try_from(c) {
         return ProcOrSym::Proc(handle_string_proc(sproc, ers));
+    } else if let Ok(gproc) = GenericProcs::try_from(c) {
+        return ProcOrSym::Proc(handle_generic_proc(gproc, ers));
     } else {
         return ProcOrSym::Symbol;
     }
 }
 
-fn handle_numeric_proc(bop: NumericProcs, ers: Vec<EvalResult>) -> Atom {
+fn handle_numeric_proc(proc: NumericProcs, ers: Vec<EvalResult>) -> Atom {
     let atoms = extract_atoms_from_eval_res(ers).expect("");
-
-    let result = atoms.perform_proc(bop);
+    let result = atoms.perform_proc(proc);
     println!("{result}");
     return Atom::Num(result);
 }
 
-fn handle_string_proc(bop: StringProcs, ers: Vec<EvalResult>) -> Atom {
+fn handle_string_proc(proc: StringProcs, ers: Vec<EvalResult>) -> Atom {
     let atoms = extract_atoms_from_eval_res(ers).expect("");
-    let result = atoms.perform_proc(bop);
+    let result = atoms.perform_proc(proc);
     println!("{result}");
     return Atom::Str(result);
+}
+
+fn handle_generic_proc(proc: GenericProcs, ers: Vec<EvalResult>) -> Atom {
+    let atoms = extract_atoms_from_eval_res(ers).expect("");
+    let result = atoms.perform_proc(proc);
+    println!("{result:?}");
+    return result;
 }
 
 fn extract_atoms_from_eval_res(ers: Vec<EvalResult>) -> Result<Vec<Atom>, ()> {
