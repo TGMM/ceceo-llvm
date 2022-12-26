@@ -12,7 +12,6 @@ pub enum Tok<'input> {
     Symbol(&'input str),
     Str(&'input str),
     Num(&'input str),
-    Op(&'input str),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -51,7 +50,6 @@ impl<'input> Lexer<'input> {
                 Tok::Symbol(_) => Tok::Symbol(&self.input[start_idx..new_end_idx]),
                 Tok::Str(_) => Tok::Str(&self.input[start_idx..new_end_idx]),
                 Tok::Num(_) => Tok::Num(&self.input[start_idx..new_end_idx]),
-                Tok::Op(_) => Tok::Op(&self.input[start_idx..new_end_idx]),
                 Tok::Whitespace => Tok::Whitespace,
                 Tok::LeftParen => Tok::LeftParen,
                 Tok::RightParen => Tok::RightParen,
@@ -106,6 +104,28 @@ impl<'input> Lexer<'input> {
         return res;
     }
 
+    #[allow(clippy::unnecessary_wraps)]
+    fn consume_single_char(
+        &mut self,
+        start_idx: usize,
+        tok: Tok<'input>,
+    ) -> Option<LexerItem<'input>> {
+        _ = self.consume();
+        return Some(Ok((start_idx, tok, start_idx + 1)));
+    }
+
+    fn consume_left_paren(&mut self, start_idx: usize) -> Option<LexerItem<'input>> {
+        self.consume_single_char(start_idx, Tok::LeftParen)
+    }
+
+    fn consume_right_paren(&mut self, start_idx: usize) -> Option<LexerItem<'input>> {
+        self.consume_single_char(start_idx, Tok::RightParen)
+    }
+
+    fn consume_quote(&mut self, start_idx: usize) -> Option<LexerItem<'input>> {
+        self.consume_single_char(start_idx, Tok::Quote)
+    }
+
     // In case we change our minds later
     #[must_use]
     pub fn is_symbol_char(ch: char) -> bool {
@@ -156,31 +176,22 @@ impl<'input> Iterator for Lexer<'input> {
     fn next(&mut self) -> Option<Self::Item> {
         loop {
             let ch = self.chars.peek().copied();
-            match ch {
-                Some((i, c)) if Lexer::is_left_paren(c) => {
-                    _ = self.consume();
-                    return Some(Ok((i, Tok::LeftParen, i + 1)));
-                }
-                Some((i, c)) if Lexer::is_right_paren(c) => {
-                    _ = self.consume();
-                    return Some(Ok((i, Tok::RightParen, i + 1)));
-                }
-                Some((i, c)) if Lexer::is_quote(c) => {
-                    _ = self.consume();
-                    return Some(Ok((i, Tok::Quote, i + 1)));
-                }
-                Some((i, c)) if Lexer::is_string_quote(c) => return self.consume_string(i),
-                Some((i, c)) if Lexer::is_decimal_digit(c) => return self.consume_num(i),
-                Some((i, c)) if Lexer::is_symbol_char(c) => return self.consume_symbol(i),
+            return match ch {
+                Some((i, c)) if Lexer::is_left_paren(c) => self.consume_left_paren(i),
+                Some((i, c)) if Lexer::is_right_paren(c) => self.consume_right_paren(i),
+                Some((i, c)) if Lexer::is_quote(c) => self.consume_quote(i),
+                Some((i, c)) if Lexer::is_string_quote(c) => self.consume_string(i),
+                Some((i, c)) if Lexer::is_decimal_digit(c) => self.consume_num(i),
+                Some((i, c)) if Lexer::is_symbol_char(c) => self.consume_symbol(i),
                 Some((i, c)) if Lexer::is_whitespace(c) => {
                     self.consume_whitespace(i);
                     // This skips the whitespace instead of creating a token for it
                     continue;
                     // return Some(Ok((i, Tok::Whitespace, i + 1)));
                 }
-                None => return None, // End of file
+                None => None, // End of file
                 Some((i, c)) => panic!("Tokenizer: invalid token {c} at {i}"),
-            }
+            };
         }
     }
 }
