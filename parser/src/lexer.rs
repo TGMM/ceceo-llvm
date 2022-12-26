@@ -132,9 +132,21 @@ impl<'input> Lexer<'input> {
     }
 
     #[must_use]
-    pub fn is_whitespace(c: char) -> bool {
+    pub fn is_whitespace(ch: char) -> bool {
         const WHITESPACE_CHARS: [char; 3] = [' ', '\n', '\t'];
-        return WHITESPACE_CHARS.contains(&c);
+        return WHITESPACE_CHARS.contains(&ch);
+    }
+
+    #[must_use]
+    pub fn is_left_paren(ch: char) -> bool {
+        const LEFT_PAREN_CHARS: [char; 3] = ['(', '[', '{'];
+        return LEFT_PAREN_CHARS.contains(&ch);
+    }
+
+    #[must_use]
+    pub fn is_right_paren(ch: char) -> bool {
+        const RIGHT_PAREN_CHARS: [char; 3] = [')', ']', '}'];
+        return RIGHT_PAREN_CHARS.contains(&ch);
     }
 }
 
@@ -145,15 +157,15 @@ impl<'input> Iterator for Lexer<'input> {
         loop {
             let ch = self.chars.peek().copied();
             match ch {
-                Some((i, '(')) => {
+                Some((i, c)) if Lexer::is_left_paren(c) => {
                     _ = self.consume();
                     return Some(Ok((i, Tok::LeftParen, i + 1)));
                 }
-                Some((i, ')')) => {
+                Some((i, c)) if Lexer::is_right_paren(c) => {
                     _ = self.consume();
                     return Some(Ok((i, Tok::RightParen, i + 1)));
                 }
-                Some((i, '\'')) => {
+                Some((i, c)) if Lexer::is_quote(c) => {
                     _ = self.consume();
                     return Some(Ok((i, Tok::Quote, i + 1)));
                 }

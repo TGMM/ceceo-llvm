@@ -109,3 +109,23 @@ fn quote_atom_test() {
     let parsed_expr = ep.parse(input, lexer).unwrap();
     print!("{parsed_expr:?}");
 }
+
+#[test]
+fn different_parens_test() {
+    let input = "(() [] {}) [() [] {}] {() [] {}}";
+    let lexer = Lexer::new(input);
+    let ep = ceceo::ProgramParser::new();
+
+    let parsed_expr = ep.parse(input, lexer).unwrap();
+    print!("{parsed_expr:?}");
+}
+
+#[test]
+fn different_parens_content_test() {
+    let input = "(+ (- 2 1) [* 3 1] {/ 9 3})";
+    let lexer = Lexer::new(input);
+    let ep = ceceo::ProgramParser::new();
+
+    let parsed_expr = ep.parse(input, lexer).unwrap();
+    print!("{parsed_expr:?}");
+}
