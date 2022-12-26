@@ -1,6 +1,6 @@
 #![cfg(test)]
 use crate::expr_interpreter::{handle_list, EvalResult};
-use ceceo_llvm_parser::{ast::Atom, parse_ceceo};
+use parser::{ast::Atom, parse_ceceo};
 
 #[test]
 fn all_numeric_procs_work() {

@@ -1,6 +1,6 @@
 use std::mem::Discriminant;
 
-use ceceo_llvm_parser::ast::Atom;
+use parser::ast::Atom;
 
 use crate::get_atom_vals::GetAtomValues;
 

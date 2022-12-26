@@ -1,5 +1,5 @@
 use crate::lexer::{Tok, LexicalError};
-use crate::ast::{Node, Atom};
+use crate::ast::{Node, Atom, parse_hash_symbol};
 use std::str::FromStr;
 
 grammar<'input>(input: &'input str);
@@ -13,6 +13,7 @@ extern {
         ")" => Tok::RightParen,
         "'" => Tok::Quote,
         Symbol => Tok::Symbol(<&'input str>),
+        HashSymbol => Tok::HashSymbol(<&'input str>),
         Str => Tok::Str(<&'input str>),
         Num => Tok::Num(<&'input str>)
     }
@@ -30,6 +31,7 @@ AtomOrList: Node = {
 
 Atom: Atom = {
     Symbol => Atom::Symbol(<>.to_string()),
+    HashSymbol => parse_hash_symbol(<>),
     Str => Atom::Str(<>.to_string()),
     Num => Atom::Num(i32::from_str(<>).unwrap())
 }

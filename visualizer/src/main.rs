@@ -10,7 +10,7 @@
 pub mod ast_serialize;
 
 use ast_serialize::ToInfoStruct;
-use ceceo_llvm_parser::parse_ceceo;
+use parser::parse_ceceo;
 
 fn main() {
     let node_list = parse_ceceo("(+ (* 2 2) (+ 5 1))").unwrap();

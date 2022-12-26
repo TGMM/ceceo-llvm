@@ -1,6 +1,6 @@
 use std::mem::Discriminant;
 
-use ceceo_llvm_parser::ast::Atom;
+use parser::ast::Atom;
 
 pub trait GetAtomValues<T> {
     fn get_atom_vals(&self, disc: Discriminant<Atom>) -> Result<Vec<&T>, &'static str>;

@@ -65,15 +65,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e9f73505338f7d905b19d18738976aae232eb46b8efc15554ffc56deb5d9ebe4"
 
 [[package]]
-name = "ceceo_llvm_parser"
-version = "0.1.0"
-dependencies = [
- "lalrpop",
- "lalrpop-util",
- "regex",
-]
-
-[[package]]
 name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -120,9 +111,9 @@ dependencies = [
 name = "compiler"
 version = "0.1.0"
 dependencies = [
- "ceceo_llvm_parser",
  "clap",
  "inkwell",
+ "parser",
 ]
 
 [[package]]
@@ -278,8 +269,8 @@ dependencies = [
 name = "interpreter"
 version = "0.1.0"
 dependencies = [
- "ceceo_llvm_parser",
  "clap",
+ "parser",
 ]
 
 [[package]]
@@ -446,6 +437,15 @@ dependencies = [
  "redox_syscall",
  "smallvec",
  "windows-sys",
+]
+
+[[package]]
+name = "parser"
+version = "0.1.0"
+dependencies = [
+ "lalrpop",
+ "lalrpop-util",
+ "regex",
 ]
 
 [[package]]
@@ -740,7 +740,7 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 name = "visualizer"
 version = "0.1.0"
 dependencies = [
- "ceceo_llvm_parser",
+ "parser",
  "serde",
  "serde_json",
 ]

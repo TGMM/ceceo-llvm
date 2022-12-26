@@ -1,5 +1,5 @@
 use crate::{procs_impl::ProcImpls, numeric_procs::NumericProcs, string_procs::StringProcs};
-use ceceo_llvm_parser::{
+use parser::{
     ast::{Atom, Node},
 };
 

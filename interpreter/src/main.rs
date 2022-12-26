@@ -16,9 +16,9 @@ mod procs_impl;
 mod string_procs;
 mod tests;
 
-use ceceo_llvm_parser::parse_ceceo;
 use clap::Parser;
 use expr_interpreter::interpret_ceceo;
+use parser::parse_ceceo;
 use std::fs;
 
 #[derive(Parser, Default, Debug)]

@@ -12,6 +12,7 @@ pub enum Tok<'input> {
     Symbol(&'input str),
     Str(&'input str),
     Num(&'input str),
+    HashSymbol(&'input str),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -50,6 +51,7 @@ impl<'input> Lexer<'input> {
                 Tok::Symbol(_) => Tok::Symbol(&self.input[start_idx..new_end_idx]),
                 Tok::Str(_) => Tok::Str(&self.input[start_idx..new_end_idx]),
                 Tok::Num(_) => Tok::Num(&self.input[start_idx..new_end_idx]),
+                Tok::HashSymbol(_) => Tok::HashSymbol(&self.input[start_idx..new_end_idx]),
                 Tok::Whitespace => Tok::Whitespace,
                 Tok::LeftParen => Tok::LeftParen,
                 Tok::RightParen => Tok::RightParen,
@@ -86,6 +88,10 @@ impl<'input> Lexer<'input> {
 
     fn consume_symbol(&mut self, start_idx: usize) -> Option<LexerItem<'input>> {
         self.consume_while(start_idx, Lexer::is_symbol_char, Tok::Symbol(""))
+    }
+
+    fn consume_hash_symbol(&mut self, start_idx: usize) -> Option<LexerItem<'input>> {
+        self.consume_while(start_idx, Lexer::is_symbol_char, Tok::HashSymbol(""))
     }
 
     fn consume_num(&mut self, start_idx: usize) -> Option<LexerItem<'input>> {
@@ -152,6 +158,11 @@ impl<'input> Lexer<'input> {
     }
 
     #[must_use]
+    pub const fn is_hash_char(ch: char) -> bool {
+        '#' == ch
+    }
+
+    #[must_use]
     pub fn is_whitespace(ch: char) -> bool {
         const WHITESPACE_CHARS: [char; 3] = [' ', '\n', '\t'];
         return WHITESPACE_CHARS.contains(&ch);
@@ -182,6 +193,7 @@ impl<'input> Iterator for Lexer<'input> {
                 Some((i, c)) if Lexer::is_quote(c) => self.consume_quote(i),
                 Some((i, c)) if Lexer::is_string_quote(c) => self.consume_string(i),
                 Some((i, c)) if Lexer::is_decimal_digit(c) => self.consume_num(i),
+                Some((i, c)) if Lexer::is_hash_char(c) => self.consume_hash_symbol(i),
                 Some((i, c)) if Lexer::is_symbol_char(c) => self.consume_symbol(i),
                 Some((i, c)) if Lexer::is_whitespace(c) => {
                     self.consume_whitespace(i);
@@ -198,7 +210,7 @@ impl<'input> Iterator for Lexer<'input> {
 
 #[test]
 fn lexer_works_properly() {
-    let source = "(atom 10 \"string\" '(1 2 3) string-append)";
+    let source = "(atom 10 \"string\" '(1 2 3) string-append #true)";
 
     Lexer::new(source).for_each(|t| println!("{:?}", t.unwrap().1));
 
@@ -217,7 +229,9 @@ fn lexer_works_properly() {
 
     assert_eq!(lex.next().unwrap().unwrap().1, Tok::Symbol("string-append"));
 
+    assert_eq!(lex.next().unwrap().unwrap().1, Tok::HashSymbol("#true"));
+
     assert_eq!(lex.next().unwrap().unwrap().1, Tok::RightParen);
 
-    assert_eq!(Lexer::new(source).count(), 12);
+    assert_eq!(Lexer::new(source).count(), 13);
 }

@@ -6,7 +6,7 @@
 #![allow(clippy::missing_docs_in_private_items)]
 #![allow(clippy::cargo_common_metadata)]
 #![allow(clippy::missing_errors_doc)]
-
+#[allow(clippy::missing_panics_doc)]
 pub mod ast;
 pub mod lexer;
 
@@ -123,6 +123,16 @@ fn different_parens_test() {
 #[test]
 fn different_parens_content_test() {
     let input = "(+ (- 2 1) [* 3 1] {/ 9 3})";
+    let lexer = Lexer::new(input);
+    let ep = ceceo::ProgramParser::new();
+
+    let parsed_expr = ep.parse(input, lexer).unwrap();
+    print!("{parsed_expr:?}");
+}
+
+#[test]
+fn hash_symbol_test() {
+    let input = "(#true #false #t #f #T #F)";
     let lexer = Lexer::new(input);
     let ep = ceceo::ProgramParser::new();
 

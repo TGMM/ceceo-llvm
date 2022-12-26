@@ -1,6 +1,6 @@
 #![allow(non_upper_case_globals)]
 
-use ceceo_llvm_parser::ast::{Atom, Node};
+use parser::ast::{Atom, Node};
 use serde::Serialize;
 
 #[derive(Clone, Serialize)]
@@ -9,6 +9,7 @@ pub enum AtomS {
     Num(i32),
     Symbol(String),
     Str(String),
+    Bool(bool),
 }
 
 #[derive(Serialize)]
@@ -58,17 +59,21 @@ impl ToInfoStruct for Node {
         // and their values inside the json should reflect their new type
         return match self {
             Node::Atom(a) | Node::QuoteAtom(a) => match a {
-                ceceo_llvm_parser::ast::Atom::Num(num) => ListOrAtomInfo::Atom(InfoStruct {
+                Atom::Num(num) => ListOrAtomInfo::Atom(InfoStruct {
                     r#type: Num.to_string(),
                     value: Box::new(Atom::Num(*num)),
                 }),
-                ceceo_llvm_parser::ast::Atom::Symbol(symbol) => ListOrAtomInfo::Atom(InfoStruct {
+                Atom::Symbol(symbol) => ListOrAtomInfo::Atom(InfoStruct {
                     r#type: Symbol.to_string(),
                     value: Box::new(Atom::Symbol(symbol.to_owned())),
                 }),
-                ceceo_llvm_parser::ast::Atom::Str(str) => ListOrAtomInfo::Atom(InfoStruct {
+                Atom::Str(str) => ListOrAtomInfo::Atom(InfoStruct {
                     r#type: Str.to_string(),
                     value: Box::new(Atom::Str(str.to_owned())),
+                }),
+                Atom::Bool(b) => ListOrAtomInfo::Atom(InfoStruct {
+                    r#type: b.to_string(),
+                    value: Box::new(Atom::Bool(b.to_owned())),
                 }),
             },
             Node::List(list) | Node::QuoteList(list) => {

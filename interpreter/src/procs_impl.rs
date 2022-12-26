@@ -1,5 +1,5 @@
 use crate::{eval_binary_op::EvalProc, numeric_procs::NumericProcs, string_procs::StringProcs};
-use ceceo_llvm_parser::ast::Atom;
+use parser::ast::Atom;
 use std::mem::Discriminant;
 
 const ZERO_ARGS: &str = "Invalid number of args: 0";

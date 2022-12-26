@@ -7,8 +7,8 @@
 #![allow(clippy::cargo_common_metadata)]
 #![allow(clippy::missing_errors_doc)]
 
-use ceceo_llvm_parser::parse_ceceo;
 use clap::Parser;
+use parser::parse_ceceo;
 use std::fs;
 
 #[derive(Parser, Default, Debug)]
