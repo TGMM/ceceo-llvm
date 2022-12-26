@@ -11,7 +11,7 @@ pub trait ProcImpls<T, U> {
 impl ProcImpls<i32, NumericProcs> for Vec<Atom> {
     fn perform_proc(&self, bop_type: NumericProcs) -> i32 {
         fn sum(va: &Vec<Atom>, disc: Option<Discriminant<Atom>>) -> i32 {
-            if va.len() < 1 {
+            if va.is_empty() {
                 return 0;
             }
 
@@ -19,7 +19,7 @@ impl ProcImpls<i32, NumericProcs> for Vec<Atom> {
         }
 
         fn mult(va: &Vec<Atom>, disc: Option<Discriminant<Atom>>) -> i32 {
-            if va.len() < 1 {
+            if va.is_empty() {
                 return 1;
             }
 
@@ -43,13 +43,13 @@ impl ProcImpls<i32, NumericProcs> for Vec<Atom> {
         }
 
         let first_atom = self.first();
-        let disc = first_atom.map(|a| std::mem::discriminant(a));
+        let disc = first_atom.map(std::mem::discriminant);
 
         match bop_type {
-            NumericProcs::Sum => sum(&self, disc),
-            NumericProcs::Subtract => subtract(&self, disc),
-            NumericProcs::Mult => mult(&self, disc),
-            NumericProcs::Div => div(&self, disc),
+            NumericProcs::Sum => sum(self, disc),
+            NumericProcs::Subtract => subtract(self, disc),
+            NumericProcs::Mult => mult(self, disc),
+            NumericProcs::Div => div(self, disc),
         }
     }
 }
@@ -61,10 +61,10 @@ impl ProcImpls<String, StringProcs> for Vec<Atom> {
         }
 
         let first_atom = self.first();
-        let disc = first_atom.map(|a| std::mem::discriminant(a));
+        let disc = first_atom.map(std::mem::discriminant);
 
         match bop_type {
-            StringProcs::Append => append_strings(&self, disc),
+            StringProcs::Append => append_strings(self, disc),
         }
     }
 }

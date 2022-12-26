@@ -31,14 +31,14 @@ fn handle_numeric_proc(bop: NumericProcs, ers: Vec<EvalResult>) -> Atom {
     let atoms = extract_atoms_from_eval_res(ers).expect("");
 
     let result = atoms.perform_proc(bop);
-    println!("{}", result);
+    println!("{result}");
     return Atom::Num(result);
 }
 
 fn handle_string_proc(bop: StringProcs, ers: Vec<EvalResult>) -> Atom {
     let atoms = extract_atoms_from_eval_res(ers).expect("");
     let result = atoms.perform_proc(bop);
-    println!("{}", result);
+    println!("{result}");
     return Atom::Str(result);
 }
 
@@ -68,7 +68,7 @@ fn eval_node(node: &Node) -> EvalResult {
 }
 
 pub fn handle_list(list: &Vec<Node>) -> EvalResult {
-    if list.len() < 1 {
+    if list.is_empty() {
         panic!("Missing procedure expression");
     }
 

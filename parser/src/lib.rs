@@ -1,3 +1,5 @@
+#![allow(clippy::needless_return)]
+
 pub mod ast;
 pub mod lexer;
 
@@ -23,7 +25,7 @@ fn basic_expr_test() {
     let ep = ceceo::ProgramParser::new();
 
     let parsed_expr = ep.parse(input, lexer).unwrap();
-    print!("{:?}", parsed_expr);
+    print!("{parsed_expr:?}");
 }
 
 #[test]
@@ -33,7 +35,7 @@ fn recursive_expr_test() {
     let ep = ceceo::ProgramParser::new();
 
     let parsed_expr = ep.parse(input, lexer).unwrap();
-    print!("{:?}", parsed_expr);
+    print!("{parsed_expr:?}");
 }
 
 #[test]
@@ -43,7 +45,7 @@ fn multiple_expr_test() {
     let ep = ceceo::ProgramParser::new();
 
     let parsed_expr = ep.parse(input, lexer).unwrap();
-    print!("{:?}", parsed_expr);
+    print!("{parsed_expr:?}");
 }
 
 #[test]
@@ -53,9 +55,9 @@ fn simple_program_test() {
     let ep = ceceo::ProgramParser::new();
 
     let x: Vec<char> = input.chars().skip(57).collect();
-    println!("{:?}", x);
+    println!("{x:?}");
     let parsed_expr = ep.parse(input, lexer).unwrap();
-    print!("{:?}", parsed_expr);
+    print!("{parsed_expr:?}");
 }
 
 #[test]
@@ -73,9 +75,9 @@ fn real_program_test() {
     let ep = ceceo::ProgramParser::new();
 
     match ep.parse(input, lexer) {
-        Ok(parsed_expr) => print!("{:?}\n", parsed_expr),
+        Ok(parsed_expr) => println!("{parsed_expr:?}"),
         Err(err) => {
-            print!("{:?}\n", err);
+            println!("{err:?}");
             panic!();
         }
     }
@@ -88,7 +90,7 @@ fn quote_list_test() {
     let ep = ceceo::ProgramParser::new();
 
     let parsed_expr = ep.parse(input, lexer).unwrap();
-    print!("{:?}", parsed_expr);
+    print!("{parsed_expr:?}");
 }
 
 #[test]
@@ -98,5 +100,5 @@ fn quote_atom_test() {
     let ep = ceceo::ProgramParser::new();
 
     let parsed_expr = ep.parse(input, lexer).unwrap();
-    print!("{:?}", parsed_expr);
+    print!("{parsed_expr:?}");
 }

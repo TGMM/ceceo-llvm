@@ -12,10 +12,10 @@ fn main() {
     match fs::read_to_string(args.file_name) {
         Ok(contents) => {
             let parsed_ceceo = parse_ceceo(&contents).unwrap();
-            println!("{:?}", parsed_ceceo);
+            println!("{parsed_ceceo:?}");
         }
         Err(err) => {
-            println!("{}", err);
+            println!("{err}");
         }
     }
 }

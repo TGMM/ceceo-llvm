@@ -1,4 +1,5 @@
 #![feature(let_chains)]
+#![allow(clippy::needless_return)]
 
 mod eval_binary_op;
 pub mod expr_interpreter;
@@ -26,7 +27,7 @@ fn main() {
             interpret_ceceo(parsed_ceceo);
         }
         Err(err) => {
-            println!("{}", err);
+            println!("{err}");
         }
     }
 }

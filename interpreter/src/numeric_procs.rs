@@ -18,9 +18,9 @@ impl<'a> TryFrom<&'a str> for NumericProcs {
     }
 }
 
-impl<'a> Into<&'a str> for NumericProcs {
-    fn into(self) -> &'static str {
-        match self {
+impl<'a> From<NumericProcs> for &'a str {
+    fn from(val: NumericProcs) -> Self {
+        match val {
             NumericProcs::Sum => "+",
             NumericProcs::Subtract => "-",
             NumericProcs::Mult => "*",

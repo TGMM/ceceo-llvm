@@ -33,7 +33,7 @@ pub trait ToInfoStruct {
     fn to_info_struct(&self) -> ListOrAtomInfo;
 }
 
-fn nodes_to_info_structs(vn: &Vec<Node>) -> ListOrAtomInfo {
+fn nodes_to_info_structs(vn: &[Node]) -> ListOrAtomInfo {
     let mut res: Vec<ListOrAtomInfo> = vec![];
     vn.iter().for_each(|n| res.push(n.to_info_struct()));
 

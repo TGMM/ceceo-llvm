@@ -8,7 +8,7 @@ fn all_numeric_procs_work() {
 
     let parsed_ceceo = parse_ceceo(program).unwrap();
     let expr = parsed_ceceo.first().unwrap();
-    let result = handle_list(&expr);
+    let result = handle_list(expr);
 
     assert_eq!(result, EvalResult::Atom(Atom::Num(100)))
 }
@@ -19,7 +19,7 @@ fn int_sum_returns_zero_if_no_args() {
 
     let parsed_ceceo = parse_ceceo(program).unwrap();
     let expr = parsed_ceceo.first().unwrap();
-    let result = handle_list(&expr);
+    let result = handle_list(expr);
 
     assert_eq!(result, EvalResult::Atom(Atom::Num(0)))
 }
@@ -30,7 +30,7 @@ fn int_mult_returns_one_if_no_args() {
 
     let parsed_ceceo = parse_ceceo(program).unwrap();
     let expr = parsed_ceceo.first().unwrap();
-    let result = handle_list(&expr);
+    let result = handle_list(expr);
 
     assert_eq!(result, EvalResult::Atom(Atom::Num(1)))
 }
@@ -41,7 +41,7 @@ fn string_append_works() {
 
     let parsed_ceceo = parse_ceceo(program).unwrap();
     let expr = parsed_ceceo.first().unwrap();
-    let result = handle_list(&expr);
+    let result = handle_list(expr);
 
     assert_eq!(
         result,

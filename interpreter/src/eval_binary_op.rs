@@ -24,6 +24,6 @@ impl EvalProc<String> for Vec<Atom> {
     ) -> String {
         let vals = GetAtomValues::<String>::get_atom_vals(self, disc).unwrap();
         let result = vals.iter().map(|&v| v.clone()).reduce(reducer).unwrap();
-        return result.clone();
+        return result;
     }
 }

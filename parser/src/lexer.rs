@@ -161,7 +161,7 @@ impl<'input> Iterator for Lexer<'input> {
                     // return Some(Ok((i, Tok::Whitespace, i + 1)));
                 }
                 None => return None, // End of file
-                Some((i, c)) => panic!("Tokenizer: invalid token {} at {}", c, i),
+                Some((i, c)) => panic!("Tokenizer: invalid token {c} at {i}"),
             }
         }
     }

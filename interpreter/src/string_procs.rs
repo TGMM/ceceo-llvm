@@ -12,9 +12,9 @@ impl<'a> TryFrom<&'a str> for StringProcs {
     }
 }
 
-impl Into<&'static str> for StringProcs {
-    fn into(self) -> &'static str {
-        match self {
+impl From<StringProcs> for &'static str {
+    fn from(val: StringProcs) -> Self {
+        match val {
             StringProcs::Append => "string-append",
         }
     }
