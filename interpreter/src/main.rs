@@ -10,6 +10,7 @@
 
 mod eval_iter;
 mod eval_proc;
+mod eval_result;
 pub mod expr_interpreter;
 mod generic_procs;
 mod numeric_procs;

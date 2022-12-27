@@ -1,6 +1,6 @@
 use parser::ast::Node;
 
-use crate::expr_interpreter::{handle_list, EvalResult};
+use crate::{eval_result::EvalResult, expr_interpreter::handle_list};
 
 pub fn eval_node(node: &Node) -> EvalResult {
     return match node {

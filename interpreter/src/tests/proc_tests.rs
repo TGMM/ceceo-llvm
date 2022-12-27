@@ -1,5 +1,5 @@
 #![cfg(test)]
-use crate::expr_interpreter::{handle_list, EvalResult};
+use crate::{eval_result::EvalResult, expr_interpreter::handle_list};
 use parser::{ast::Atom, parse_ceceo};
 
 #[test]

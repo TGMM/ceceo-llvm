@@ -1,6 +1,6 @@
 use crate::{
-    eval_iter::{EvalIter, eval_node}, eval_proc::EvalProc, expr_interpreter::EvalResult,
-    generic_procs::GenericProcs, numeric_procs::NumericProcs, string_procs::StringProcs,
+    eval_iter::{EvalIter, eval_node}, eval_proc::EvalProc,
+    generic_procs::GenericProcs, numeric_procs::NumericProcs, string_procs::StringProcs, eval_result::EvalResult,
 };
 use parser::ast::{Atom, Node};
 

@@ -1,6 +1,6 @@
 use parser::ast::{Atom, Node};
 
-use crate::{eval_iter::EvalIter, expr_interpreter::EvalResult};
+use crate::{eval_iter::EvalIter, eval_result::EvalResult};
 
 pub trait EvalProc<T> {
     fn eval_proc(&self, f: impl Fn(T, T) -> T) -> T;
