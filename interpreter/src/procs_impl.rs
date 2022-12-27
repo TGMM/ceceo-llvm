@@ -2,6 +2,7 @@ use crate::{
     eval_iter::{EvalIter, eval_node}, eval_proc::EvalProc,
     generic_procs::GenericProcs, numeric_procs::NumericProcs, string_procs::StringProcs, eval_result::EvalResult,
 };
+use once_cell::sync::Lazy;
 use parser::ast::{Atom, Node};
 
 pub trait ProcImpls<T, U> {
@@ -69,6 +70,43 @@ impl ProcImpls<String, StringProcs> for &[Node] {
     }
 }
 
+static VOID: Lazy<EvalResult> = Lazy::new(|| {
+    EvalResult::QuoteAtom(Atom::Symbol("<void>".to_string()))
+});
+
+fn node_is_false(node: &Node, should_eval: bool) -> bool {
+    if should_eval {
+        return eval_result_is_false(&eval_node(node));
+    }
+
+    if let Node::Atom(a) = node 
+    && let Atom::Bool(b) = a 
+    && b == &false {
+        return true;
+    }
+
+    return false;
+}
+
+fn eval_result_is_false(er: &EvalResult) -> bool {
+    if let EvalResult::Atom(atom) = er 
+    && let Atom::Bool(bool) = atom
+    && bool == &false {
+        return true;
+    } 
+
+    return false;
+}
+
+fn evaluate_and_return_last(node_list: &[Node]) -> Option<EvalResult> {
+    let mut ret = None;
+    for node in node_list {
+        ret = Some(eval_node(node));
+    }
+
+    return ret;
+}
+
 impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
     fn perform_proc<'b>(&'b self, proc_type: GenericProcs) -> EvalResult {
         fn and(node_slice: &[Node]) -> EvalResult {
@@ -76,9 +114,7 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
             let mut ret = DEFAULT;
 
             for n in node_slice.iter_eval() {
-                if let EvalResult::Atom(ref a) = n 
-                && let Atom::Bool(b) = a 
-                && b == &false {
+                if eval_result_is_false(&n) {
                     return EvalResult::Atom(Atom::Bool(false));
                 } else {
                     ret = n;
@@ -92,9 +128,7 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
             const DEFAULT: EvalResult = EvalResult::Atom(Atom::Bool(false));
 
             for n in node_slice.iter_eval() {
-                if let EvalResult::Atom(ref a) = &n 
-                && let Atom::Bool(b) = a 
-                && b == &false {
+                if eval_result_is_false(&n) {
                     continue
                 } else {
                     return n;
@@ -110,9 +144,7 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
             }
 
             let test_expr = &node_slice[0];
-            if let Node::Atom(a) = test_expr 
-            && let Atom::Bool(b) = a 
-            && b == &false {
+            if node_is_false(test_expr, false) {
                 let else_expr = &node_slice[2];
                 return eval_node(else_expr);
             } else {
@@ -129,7 +161,7 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
             let first_eval = eval_node(&node_slice[0]);
             println!("{first_eval}");
 
-            return EvalResult::QuoteAtom(Atom::Symbol("<void>".to_string()));
+            return Lazy::force(&VOID).clone();
         }
 
         fn not(node_slice: &[Node]) -> EvalResult {
@@ -138,13 +170,53 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
             }
 
             let first = &node_slice[0];
-            if let Node::Atom(a) = first 
-            && let Atom::Bool(b) = a 
-            && b == &false {
+            if node_is_false(first, false) {
                 return EvalResult::Atom(Atom::Bool(true));
             }
 
             return EvalResult::Atom(Atom::Bool(false));
+        }
+
+        fn cond(node_slice: &[Node]) -> EvalResult {
+            fn node_is_else(node: &Node) -> bool {
+                if let Node::Atom(atom) = node 
+                && let Atom::Symbol(sym) = atom
+                && sym == &"else".to_string() {
+                    return true;
+                }
+
+                return false;
+            }
+
+            let node_lists: Vec<&[Node]> = node_slice.iter().map(|n| {
+                match n {
+                    Node::List(l) if !l.is_empty() => l.as_slice(),
+                    _ => panic!("Bad test clause for cond")
+                }
+            }).collect();
+
+            fn evaluate_conds(node_lists: &[&[Node]]) -> EvalResult {
+                let length = node_lists.len();
+                for list in node_lists {
+                    let test_expr = &list[0];
+                    if node_is_else(test_expr) {
+                        return match length {
+                            1 => evaluate_and_return_last(&list[1..]).expect("Missing expressions in `else' clause"),
+                            _ => panic!("Else clause must be last")
+                        }
+                    }
+
+                    if node_is_false(test_expr, true) {
+                        return evaluate_conds(&node_lists[1..]);
+                    }
+
+                    return evaluate_and_return_last(list).unwrap_or(Lazy::force(&VOID).clone());
+                }
+
+                return Lazy::force(&VOID).clone();
+            }
+
+            return evaluate_conds(&node_lists);
         }
 
         match proc_type {
@@ -153,6 +225,7 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
             GenericProcs::If => if_proc(self),
             GenericProcs::Display => display(self),
             GenericProcs::Not => not(self),
+            GenericProcs::Cond => cond(self),
         }
     }
 }

@@ -8,6 +8,7 @@ pub enum GenericProcs {
     If,
     Display,
     Not,
+    Cond,
 }
 
 static GENERIC_PROCS_MAP: Lazy<BiHashMap<GenericProcs, &'static str>> = Lazy::new(|| {
@@ -17,6 +18,7 @@ static GENERIC_PROCS_MAP: Lazy<BiHashMap<GenericProcs, &'static str>> = Lazy::ne
         (GenericProcs::If, "if"),
         (GenericProcs::Display, "display"),
         (GenericProcs::Not, "not"),
+        (GenericProcs::Cond, "cond"),
     ])
 });
 
