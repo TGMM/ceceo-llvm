@@ -138,8 +138,8 @@ impl<'input> Lexer<'input> {
         !Self::is_whitespace(ch)
             && !Self::is_quote(ch)
             && !Self::is_string_quote(ch)
-            && ch != '('
-            && ch != ')'
+            && !Self::is_left_paren(ch)
+            && !Self::is_right_paren(ch)
     }
 
     #[must_use]
