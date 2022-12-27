@@ -148,8 +148,8 @@ fn cond_only_else() {
 #[test]
 fn cond_full() {
     let program = r#"(cond
-        [(positive? (- 5)) (error "doesn't get here")]
-        [(zero? (- 5)) (error "doesn't get here, either")]
+        [(positive? -5) (error "doesn't get here")]
+        [(zero? -5) (error "doesn't get here, either")]
         [(positive? 5) 'here])"#;
     let result = get_program_result(program);
     assert_eq!(
@@ -174,7 +174,7 @@ fn is_positive_works() {
 
 #[test]
 fn is_positive_works_false() {
-    let program = "(positive? (- 10))";
+    let program = "(positive? -10)";
     let result = get_program_result(program);
     assert_eq!(result, EvalResult::Atom(Atom::Bool(false)))
 }
