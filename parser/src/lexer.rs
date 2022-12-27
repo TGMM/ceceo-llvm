@@ -164,7 +164,7 @@ impl<'input> Lexer<'input> {
 
     #[must_use]
     pub fn is_whitespace(ch: char) -> bool {
-        const WHITESPACE_CHARS: [char; 3] = [' ', '\n', '\t'];
+        const WHITESPACE_CHARS: [char; 4] = [' ', '\n', '\t', '\r'];
         return WHITESPACE_CHARS.contains(&ch);
     }
 
