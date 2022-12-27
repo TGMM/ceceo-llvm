@@ -144,3 +144,16 @@ fn cond_only_else() {
     let result = get_program_result(program);
     assert_eq!(result, EvalResult::Atom(Atom::Num(5)))
 }
+
+// #[test]
+// fn cond_full() {
+//     let program = r#"(cond
+//         [(positive? -5) (error "doesn't get here")]
+//         [(zero? -5) (error "doesn't get here, either")]
+//         [(positive? 5) 'here])"#;
+//     let result = get_program_result(program);
+//     assert_eq!(
+//         result,
+//         EvalResult::QuoteAtom(Atom::Symbol("here".to_string()))
+//     )
+// }
