@@ -94,6 +94,29 @@ impl<'input> Lexer<'input> {
         self.consume_while(start_idx, Lexer::is_symbol_char, Tok::HashSymbol(""))
     }
 
+    fn consume_symbol_or_neg_num(&mut self, start_idx: usize) -> Option<LexerItem<'input>> {
+        let result = self.consume_while(start_idx, Lexer::is_symbol_char, Tok::Symbol(""));
+        match result {
+            Some(tok_result) => match tok_result {
+                Ok(tok_tuple) => {
+                    let tok = tok_tuple.1;
+                    if let Tok::Symbol(s) | Tok::Num(s) = tok {
+                        let is_numeric = s.parse::<i32>().is_ok();
+                        if is_numeric {
+                            return Some(Ok((tok_tuple.0, Tok::Num(s), tok_tuple.2)));
+                        }
+
+                        return Some(tok_result);
+                    }
+
+                    return None;
+                }
+                Err(_) => return None,
+            },
+            None => return None,
+        }
+    }
+
     fn consume_num(&mut self, start_idx: usize) -> Option<LexerItem<'input>> {
         self.consume_while(start_idx, Lexer::is_decimal_digit, Tok::Num(""))
     }
@@ -163,6 +186,11 @@ impl<'input> Lexer<'input> {
     }
 
     #[must_use]
+    pub const fn is_minus_char(ch: char) -> bool {
+        '-' == ch
+    }
+
+    #[must_use]
     pub fn is_whitespace(ch: char) -> bool {
         const WHITESPACE_CHARS: [char; 4] = [' ', '\n', '\t', '\r'];
         return WHITESPACE_CHARS.contains(&ch);
@@ -192,6 +220,7 @@ impl<'input> Iterator for Lexer<'input> {
                 Some((i, c)) if Lexer::is_right_paren(c) => self.consume_right_paren(i),
                 Some((i, c)) if Lexer::is_quote(c) => self.consume_quote(i),
                 Some((i, c)) if Lexer::is_string_quote(c) => self.consume_string(i),
+                Some((i, c)) if Lexer::is_minus_char(c) => self.consume_symbol_or_neg_num(i),
                 Some((i, c)) if Lexer::is_decimal_digit(c) => self.consume_num(i),
                 Some((i, c)) if Lexer::is_hash_char(c) => self.consume_hash_symbol(i),
                 Some((i, c)) if Lexer::is_symbol_char(c) => self.consume_symbol(i),
@@ -210,7 +239,7 @@ impl<'input> Iterator for Lexer<'input> {
 
 #[test]
 fn lexer_works_properly() {
-    let source = "(atom 10 \"string\" '(1 2 3) string-append #true)";
+    let source = "(atom 10 \"string\" '(1 2 3) string-append #true -10)";
 
     Lexer::new(source).for_each(|t| println!("{:?}", t.unwrap().1));
 
@@ -231,7 +260,9 @@ fn lexer_works_properly() {
 
     assert_eq!(lex.next().unwrap().unwrap().1, Tok::HashSymbol("#true"));
 
+    assert_eq!(lex.next().unwrap().unwrap().1, Tok::Num("-10"));
+
     assert_eq!(lex.next().unwrap().unwrap().1, Tok::RightParen);
 
-    assert_eq!(Lexer::new(source).count(), 13);
+    assert_eq!(Lexer::new(source).count(), 14);
 }
