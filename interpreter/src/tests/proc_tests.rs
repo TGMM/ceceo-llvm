@@ -133,3 +133,17 @@ fn if_else_branch_works() {
 
     assert_eq!(result, EvalResult::Atom(Atom::Num(15)))
 }
+
+// TODO: Test console output
+#[test]
+fn display_works() {
+    let program = "(display (+ (- 6 2) [* 3 1] {/ 9 3}))";
+    let parsed_ceceo = parse_ceceo(program).unwrap();
+    let expr = parsed_ceceo.first().unwrap();
+    let result = handle_list(expr);
+
+    assert_eq!(
+        result,
+        EvalResult::QuoteAtom(Atom::Symbol("<void>".to_string()))
+    )
+}
