@@ -1,8 +1,9 @@
+use std::sync::LazyLock;
+
 use crate::{
     eval_iter::{EvalIter, eval_node}, eval_proc::EvalProc,
     generic_procs::GenericProcs, numeric_procs::NumericProcs, string_procs::StringProcs, eval_result::EvalResult,
 };
-use once_cell::sync::Lazy;
 use parser::ast::{Atom, Node};
 
 pub trait ProcImpls<T, U> {
@@ -82,9 +83,7 @@ impl ProcImpls<String, StringProcs> for &[Node] {
     }
 }
 
-static VOID: Lazy<EvalResult> = Lazy::new(|| {
-    EvalResult::QuoteAtom(Atom::Symbol("<void>".to_string()))
-});
+static VOID: LazyLock<EvalResult> = LazyLock::new(|| EvalResult::QuoteAtom(Atom::Symbol("<void>".to_string())));
 
 fn node_is_false(node: &Node, should_eval: bool) -> bool {
     if should_eval {
@@ -173,7 +172,7 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
             let first_eval = eval_node(&node_slice[0]);
             println!("{first_eval}");
 
-            return Lazy::force(&VOID).clone();
+            return VOID.clone();
         }
 
         fn not(node_slice: &[Node]) -> EvalResult {
@@ -222,10 +221,10 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
                         return evaluate_conds(&node_lists[1..]);
                     }
 
-                    return evaluate_and_return_last(list).unwrap_or(Lazy::force(&VOID).clone());
+                    return evaluate_and_return_last(list).unwrap_or(VOID.clone());
                 }
 
-                return Lazy::force(&VOID).clone();
+                return VOID.clone();
             }
 
             return evaluate_conds(&node_lists);
@@ -253,6 +252,10 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
             test_number(node_slice, |num| num == &0)
         }
 
+        fn define() {
+            todo!()
+        }
+
         match proc_type {
             GenericProcs::And => and(self),
             GenericProcs::Or => or(self),
@@ -262,6 +265,7 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
             GenericProcs::Cond => cond(self),
             GenericProcs::IsPositive => is_positive(self),
             GenericProcs::IsZero => is_zero(self),
+            GenericProcs::Define => todo!(),
         }
     }
 }

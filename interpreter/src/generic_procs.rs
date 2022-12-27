@@ -1,5 +1,5 @@
 use bimap::BiHashMap;
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
 
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub enum GenericProcs {
@@ -11,9 +11,10 @@ pub enum GenericProcs {
     Cond,
     IsPositive,
     IsZero,
+    Define,
 }
 
-static GENERIC_PROCS_MAP: Lazy<BiHashMap<GenericProcs, &'static str>> = Lazy::new(|| {
+static GENERIC_PROCS_MAP: LazyLock<BiHashMap<GenericProcs, &'static str>> = LazyLock::new(|| {
     BiHashMap::from_iter([
         (GenericProcs::And, "and"),
         (GenericProcs::Or, "or"),
@@ -23,6 +24,7 @@ static GENERIC_PROCS_MAP: Lazy<BiHashMap<GenericProcs, &'static str>> = Lazy::ne
         (GenericProcs::Cond, "cond"),
         (GenericProcs::IsPositive, "positive?"),
         (GenericProcs::IsZero, "zero?"),
+        (GenericProcs::Define, "define"),
     ])
 });
 

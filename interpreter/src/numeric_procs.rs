@@ -1,5 +1,5 @@
 use bimap::BiHashMap;
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
 
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub enum NumericProcs {
@@ -10,7 +10,7 @@ pub enum NumericProcs {
     Modulo,
 }
 
-static NUMERIC_PROCS_MAP: Lazy<BiHashMap<NumericProcs, &'static str>> = Lazy::new(|| {
+static NUMERIC_PROCS_MAP: LazyLock<BiHashMap<NumericProcs, &'static str>> = LazyLock::new(|| {
     BiHashMap::from_iter([
         (NumericProcs::Sum, "+"),
         (NumericProcs::Subtract, "-"),

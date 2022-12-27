@@ -277,7 +277,6 @@ version = "0.1.0"
 dependencies = [
  "bimap",
  "clap",
- "once_cell",
  "parser",
 ]
 
