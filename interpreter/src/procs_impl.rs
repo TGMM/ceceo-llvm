@@ -122,7 +122,7 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
         }
 
         fn display(node_slice: &[Node]) -> EvalResult {
-            if node_slice.len() > 1 || node_slice.is_empty() {
+            if node_slice.len() != 1 {
                 panic!("Incorrect number of arguments");
             }
 
@@ -132,11 +132,27 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
             return EvalResult::QuoteAtom(Atom::Symbol("<void>".to_string()));
         }
 
+        fn not(node_slice: &[Node]) -> EvalResult {
+            if node_slice.len() != 1 {
+                panic!("Incorrect number of arguments");
+            }
+
+            let first = &node_slice[0];
+            if let Node::Atom(a) = first 
+            && let Atom::Bool(b) = a 
+            && b == &false {
+                return EvalResult::Atom(Atom::Bool(true));
+            }
+
+            return EvalResult::Atom(Atom::Bool(false));
+        }
+
         match proc_type {
             GenericProcs::And => and(self),
             GenericProcs::Or => or(self),
             GenericProcs::If => if_proc(self),
             GenericProcs::Display => display(self),
+            GenericProcs::Not => not(self),
         }
     }
 }
