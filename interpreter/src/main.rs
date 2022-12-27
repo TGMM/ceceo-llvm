@@ -25,10 +25,27 @@ use std::fs;
 #[derive(Parser, Default, Debug)]
 struct Arguments {
     file_name: String,
+    #[clap(action, long)]
+    debug: bool,
 }
+
+pub fn debug_print(log: &str) {
+    unsafe {
+        if !SHOULD_DEBUG {
+            return;
+        }
+    }
+
+    println!("DEBUG: {log}");
+}
+
+static mut SHOULD_DEBUG: bool = false;
 
 fn main() {
     let args = Arguments::parse();
+    unsafe {
+        SHOULD_DEBUG = args.debug;
+    }
     match fs::read_to_string(args.file_name) {
         Ok(contents) => {
             let parsed_ceceo = parse_ceceo(&contents).unwrap();

@@ -1,5 +1,5 @@
 use crate::{
-    generic_procs::GenericProcs, numeric_procs::NumericProcs, procs_impl::ProcImpls,
+    debug_print, generic_procs::GenericProcs, numeric_procs::NumericProcs, procs_impl::ProcImpls,
     string_procs::StringProcs,
 };
 use parser::ast::{Atom, Node};
@@ -29,19 +29,19 @@ fn handle_procedure<'a>(c: &str, node_args: &'a [Node]) -> EvalResult {
 
 fn handle_numeric_proc(proc: NumericProcs, node_args: &[Node]) -> Atom {
     let result = node_args.perform_proc(proc);
-    println!("{result}");
+    debug_print(&std::format!("{result}"));
     return Atom::Num(result);
 }
 
 fn handle_string_proc(proc: StringProcs, node_args: &[Node]) -> Atom {
     let result = node_args.perform_proc(proc);
-    println!("{result}");
+    debug_print(&std::format!("{result}"));
     return Atom::Str(result);
 }
 
 fn handle_generic_proc(proc: GenericProcs, node_args: &[Node]) -> EvalResult {
     let result = node_args.perform_proc(proc);
-    println!("{result:?}");
+    debug_print(&std::format!("{result:?}"));
     return result;
 }
 
