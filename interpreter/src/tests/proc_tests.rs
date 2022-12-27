@@ -103,3 +103,33 @@ fn and_works_with_lists() {
 
     assert_eq!(result, EvalResult::Atom(Atom::Num(100)))
 }
+
+#[test]
+fn if_then_branch_works_with_true() {
+    let program = "(if #t (+ 2 3) (+ 10 5))";
+    let parsed_ceceo = parse_ceceo(program).unwrap();
+    let expr = parsed_ceceo.first().unwrap();
+    let result = handle_list(expr);
+
+    assert_eq!(result, EvalResult::Atom(Atom::Num(5)))
+}
+
+#[test]
+fn if_then_branch_works_with_any_value() {
+    let program = "(if (* 3 (+ 2 5)) (+ 2 3) (+ 10 5))";
+    let parsed_ceceo = parse_ceceo(program).unwrap();
+    let expr = parsed_ceceo.first().unwrap();
+    let result = handle_list(expr);
+
+    assert_eq!(result, EvalResult::Atom(Atom::Num(5)))
+}
+
+#[test]
+fn if_else_branch_works() {
+    let program = "(if #f (+ 2 3) (+ 10 5))";
+    let parsed_ceceo = parse_ceceo(program).unwrap();
+    let expr = parsed_ceceo.first().unwrap();
+    let result = handle_list(expr);
+
+    assert_eq!(result, EvalResult::Atom(Atom::Num(15)))
+}

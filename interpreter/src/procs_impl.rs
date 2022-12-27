@@ -1,10 +1,8 @@
 use crate::{
-    eval_iter::EvalIter, eval_proc::EvalProc, expr_interpreter::EvalResult,
+    eval_iter::{EvalIter, eval_node}, eval_proc::EvalProc, expr_interpreter::EvalResult,
     generic_procs::GenericProcs, numeric_procs::NumericProcs, string_procs::StringProcs,
 };
 use parser::ast::{Atom, Node};
-
-const ZERO_ARGS: &str = "Invalid number of args: 0";
 
 pub trait ProcImpls<T, U> {
     fn perform_proc(&self, proc_type: U) -> T;
@@ -107,7 +105,20 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
         }
 
         fn if_proc(node_slice: &[Node]) -> EvalResult {
-            todo!("{node_slice:?}")
+            if node_slice.len() != 3 {
+                panic!("Incorrect number of arguments");
+            }
+
+            let test_expr = &node_slice[0];
+            if let Node::Atom(a) = test_expr 
+            && let Atom::Bool(b) = a 
+            && b == &false {
+                let else_expr = &node_slice[2];
+                return eval_node(else_expr);
+            } else {
+                let then_expr = &node_slice[1];
+                return eval_node(then_expr);
+            }
         }
 
         match proc_type {
