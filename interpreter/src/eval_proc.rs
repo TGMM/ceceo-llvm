@@ -10,10 +10,10 @@ impl EvalProc<i32> for &[Node] {
     fn eval_proc(&self, reducer: impl Fn(i32, i32) -> i32) -> i32 {
         self.iter_eval()
             .map(|er| {
-                if let EvalResult::Atom(atom) = er && let Atom::Num(num) = atom {
-                return num;
+                if let EvalResult::Atom(ref atom) = &er && let Atom::Num(num) = atom {
+                return *num;
             } else {
-                panic!("Incorrect type: Expected number");
+                panic!("Incorrect type: Expected number, got {er:?}");
             }
             })
             .reduce(reducer)

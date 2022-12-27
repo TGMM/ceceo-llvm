@@ -7,6 +7,7 @@ pub enum NumericProcs {
     Subtract,
     Mult,
     Div,
+    Modulo,
 }
 
 static NUMERIC_PROCS_MAP: Lazy<BiHashMap<NumericProcs, &'static str>> = Lazy::new(|| {
@@ -15,6 +16,7 @@ static NUMERIC_PROCS_MAP: Lazy<BiHashMap<NumericProcs, &'static str>> = Lazy::ne
         (NumericProcs::Subtract, "-"),
         (NumericProcs::Mult, "*"),
         (NumericProcs::Div, "/"),
+        (NumericProcs::Modulo, "modulo"),
     ])
 });
 

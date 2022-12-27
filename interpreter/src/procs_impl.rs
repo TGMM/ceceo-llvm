@@ -9,6 +9,8 @@ pub trait ProcImpls<T, U> {
     fn perform_proc(&self, proc_type: U) -> T;
 }
 
+const INCORRECT_ARG_NUM: &str = "Incorrect number of arguments";
+
 impl ProcImpls<i32, NumericProcs> for &[Node] {
     fn perform_proc(&self, proc_type: NumericProcs) -> i32 {
         fn sum(node_slice: &[Node]) -> i32 {
@@ -44,12 +46,22 @@ impl ProcImpls<i32, NumericProcs> for &[Node] {
 
             return ret;
         }
+        
+        fn modulo(node_slice: &[Node]) -> i32 {
+            if node_slice.len() != 2 {
+                panic!("{INCORRECT_ARG_NUM}");
+            }
+
+            let ret = EvalProc::<i32>::eval_proc(&node_slice, |acc, e| acc % e);
+            return ret;
+        }
 
         match proc_type {
             NumericProcs::Sum => sum(self),
             NumericProcs::Subtract => subtract(self),
             NumericProcs::Mult => mult(self),
             NumericProcs::Div => div(self),
+            NumericProcs::Modulo => modulo(self)
         }
     }
 }
@@ -140,7 +152,7 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
 
         fn if_proc(node_slice: &[Node]) -> EvalResult {
             if node_slice.len() != 3 {
-                panic!("Incorrect number of arguments");
+                panic!("{INCORRECT_ARG_NUM}");
             }
 
             let test_expr = &node_slice[0];
@@ -155,7 +167,7 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
 
         fn display(node_slice: &[Node]) -> EvalResult {
             if node_slice.len() != 1 {
-                panic!("Incorrect number of arguments");
+                panic!("{INCORRECT_ARG_NUM}");
             }
 
             let first_eval = eval_node(&node_slice[0]);
@@ -166,7 +178,7 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
 
         fn not(node_slice: &[Node]) -> EvalResult {
             if node_slice.len() != 1 {
-                panic!("Incorrect number of arguments");
+                panic!("{INCORRECT_ARG_NUM}");
             }
 
             let first = &node_slice[0];
@@ -219,6 +231,28 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
             return evaluate_conds(&node_lists);
         }
 
+        fn test_number(node_slice: &[Node], test_expr: impl Fn(&i32) -> bool) -> EvalResult {
+            if node_slice.len() != 1 {
+                panic!("{INCORRECT_ARG_NUM}");
+            }
+
+            let first = eval_node(&node_slice[0]);
+            if let EvalResult::Atom(atom) = first
+            && let Atom::Num(num) = atom {
+                return EvalResult::Atom(Atom::Bool(test_expr(&num)));
+            }
+
+            panic!("Expected number");
+        }
+
+        fn is_positive(node_slice: &[Node]) -> EvalResult {
+            test_number(node_slice, |num| num > &0)
+        }
+        
+        fn is_zero(node_slice: &[Node]) -> EvalResult {
+            test_number(node_slice, |num| num == &0)
+        }
+
         match proc_type {
             GenericProcs::And => and(self),
             GenericProcs::Or => or(self),
@@ -226,6 +260,8 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
             GenericProcs::Display => display(self),
             GenericProcs::Not => not(self),
             GenericProcs::Cond => cond(self),
+            GenericProcs::IsPositive => is_positive(self),
+            GenericProcs::IsZero => is_zero(self),
         }
     }
 }
