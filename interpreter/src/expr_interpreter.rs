@@ -5,6 +5,7 @@ use std::{
 
 use crate::{
     debug_print,
+    eval_iter::eval_node,
     eval_result::EvalResult,
     generic_procs::GenericProcs,
     numeric_procs::NumericProcs,
@@ -16,7 +17,7 @@ use parser::ast::{Atom, Node};
 
 // const OPS: [char; 11] = ['+', '-', '*', '<', '>', '%', '\"', '=', '!', '&', '/'];
 const INVALID_PROC: &str = "Invalid procedure expression";
-pub static PROC_MAP: LazyLock<Arc<RwLock<HashMap<String, bool>>>> =
+pub static DEFINITIONS_MAP: LazyLock<Arc<RwLock<HashMap<String, Node>>>> =
     LazyLock::new(|| Arc::new(RwLock::new(HashMap::new())));
 
 fn eval_proc<'a>(c: &str, node_args: &'a [Node]) -> EvalResult {
@@ -27,13 +28,16 @@ fn eval_proc<'a>(c: &str, node_args: &'a [Node]) -> EvalResult {
     } else if let Ok(gproc) = GenericProcs::try_from(c) {
         return eval_generic_proc(gproc, node_args);
     } else {
-        let proc_map = PROC_MAP.read().unwrap();
-        let res = proc_map.get(c);
-        match res {
-            Some(_) => todo!("Proc {c} exists"),
-            None => panic!("Checked and {INVALID_PROC}"),
+        let def_map = DEFINITIONS_MAP.read().unwrap();
+        let proc_opt = def_map.get(c);
+
+        if let Some(proc_node) = proc_opt
+        && let EvalResult::Proc(proc) = eval_node(proc_node) {
+            return eval_lambda(proc, node_args);
         }
     }
+
+    panic!("{INVALID_PROC}");
 }
 
 fn eval_numeric_proc(proc: NumericProcs, node_args: &[Node]) -> Atom {

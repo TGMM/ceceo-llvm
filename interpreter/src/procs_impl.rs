@@ -2,7 +2,7 @@ use std::sync::LazyLock;
 
 use crate::{
     eval_iter::{EvalIter, eval_node}, eval_proc::EvalProc,
-    generic_procs::GenericProcs, numeric_procs::NumericProcs, string_procs::StringProcs, eval_result::EvalResult, expr_interpreter::PROC_MAP, user_proc::UserProc,
+    generic_procs::GenericProcs, numeric_procs::NumericProcs, string_procs::StringProcs, eval_result::EvalResult, expr_interpreter::DEFINITIONS_MAP, user_proc::UserProc,
 };
 use parser::ast::{Atom, Node};
 
@@ -258,10 +258,11 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
             }
 
             let first = &node_slice[0];
+            let second = &node_slice[1];
             if let Node::Atom(atom) = first &&
             let Atom::Symbol(sym) = atom {
-                let mut proc_map = PROC_MAP.write().unwrap();
-                proc_map.insert(sym.to_owned(), true);
+                let mut def_map = DEFINITIONS_MAP.write().unwrap();
+                def_map.insert(sym.to_owned(), second.clone());
                 return VOID.clone();
             }
 

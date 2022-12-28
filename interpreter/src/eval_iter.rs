@@ -1,10 +1,29 @@
-use parser::ast::Node;
+use parser::ast::{Atom, Node};
 
-use crate::{eval_result::EvalResult, expr_interpreter::eval_list};
+use crate::{
+    eval_result::EvalResult,
+    expr_interpreter::{eval_list, DEFINITIONS_MAP},
+};
+
+pub fn eval_atom(atom: &Atom) -> EvalResult {
+    if let Atom::Symbol(sym) = atom {
+        let def_map = DEFINITIONS_MAP.read().unwrap();
+        let def = def_map.get(sym);
+
+        match def {
+            Some(node) => {
+                return eval_node(node);
+            }
+            None => (),
+        }
+    }
+
+    EvalResult::Atom(atom.clone())
+}
 
 pub fn eval_node(node: &Node) -> EvalResult {
     return match node {
-        Node::Atom(a) => EvalResult::Atom(a.clone()),
+        Node::Atom(a) => eval_atom(a),
         Node::List(l) => eval_list(l),
         Node::QuoteList(ql) => EvalResult::QuoteList(ql.clone()),
         Node::QuoteAtom(qa) => EvalResult::QuoteAtom(qa.clone()),
