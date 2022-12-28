@@ -306,6 +306,27 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
             panic!("Incorrect lambda syntax: Bad arguments");
         }
 
+        fn num_eq(node_slice: &[Node]) -> EvalResult {
+            if node_slice.is_empty() {
+                panic!("{INCORRECT_ARG_NUM}");
+            }
+            if node_slice.len() == 1 {
+                return EvalResult::Atom(Atom::Bool(true));
+            }
+
+            let mut num_iter = node_slice.iter_eval().map(|er| {
+                if let EvalResult::Atom(atom) = er 
+                && let Atom::Num(num) = atom {
+                    return num;
+                }
+
+                panic!("The equality operator (=) only work with numbers")
+            });
+            
+            let first = num_iter.nth(0).unwrap();
+            return EvalResult::Atom(Atom::Bool(num_iter.all(|item| item == first)));
+        }
+
         match proc_type {
             GenericProcs::And => and(self),
             GenericProcs::Or => or(self),
@@ -317,6 +338,7 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
             GenericProcs::IsZero => is_zero(self),
             GenericProcs::Define => define(self),
             GenericProcs::Lambda => lambda(self),
+            GenericProcs::NumEq => num_eq(self),
         }
     }
 }

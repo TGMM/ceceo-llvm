@@ -37,7 +37,7 @@ fn eval_proc<'a>(c: &str, node_args: &'a [Node]) -> EvalResult {
         }
     }
 
-    panic!("{INVALID_PROC}");
+    panic!("{INVALID_PROC}: {c}");
 }
 
 fn eval_numeric_proc(proc: NumericProcs, node_args: &[Node]) -> Atom {

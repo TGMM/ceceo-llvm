@@ -13,6 +13,7 @@ pub enum GenericProcs {
     IsZero,
     Define,
     Lambda,
+    NumEq,
 }
 
 static GENERIC_PROCS_MAP: LazyLock<BiHashMap<GenericProcs, &'static str>> = LazyLock::new(|| {
@@ -27,6 +28,7 @@ static GENERIC_PROCS_MAP: LazyLock<BiHashMap<GenericProcs, &'static str>> = Lazy
         (GenericProcs::IsZero, "zero?"),
         (GenericProcs::Define, "define"),
         (GenericProcs::Lambda, "lambda"),
+        (GenericProcs::NumEq, "="),
     ])
 });
 
