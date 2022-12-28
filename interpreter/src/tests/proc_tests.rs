@@ -1,11 +1,11 @@
 #![cfg(test)]
-use crate::{eval_result::EvalResult, expr_interpreter::handle_list};
+use crate::{eval_result::EvalResult, expr_interpreter::eval_list};
 use parser::{ast::Atom, parse_ceceo};
 #[cfg(test)]
 fn get_program_result(program: &str) -> EvalResult {
     let parsed_ceceo = parse_ceceo(program).unwrap();
     let expr = parsed_ceceo.first().unwrap();
-    let result = handle_list(expr);
+    let result = eval_list(expr);
     return result;
 }
 

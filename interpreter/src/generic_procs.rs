@@ -12,6 +12,7 @@ pub enum GenericProcs {
     IsPositive,
     IsZero,
     Define,
+    Lambda,
 }
 
 static GENERIC_PROCS_MAP: LazyLock<BiHashMap<GenericProcs, &'static str>> = LazyLock::new(|| {
@@ -25,6 +26,7 @@ static GENERIC_PROCS_MAP: LazyLock<BiHashMap<GenericProcs, &'static str>> = Lazy
         (GenericProcs::IsPositive, "positive?"),
         (GenericProcs::IsZero, "zero?"),
         (GenericProcs::Define, "define"),
+        (GenericProcs::Lambda, "lambda"),
     ])
 });
 

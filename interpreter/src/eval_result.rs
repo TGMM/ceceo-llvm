@@ -1,12 +1,21 @@
-use crate::eval_iter::eval_node;
+use crate::{eval_iter::eval_node, user_proc::UserProc};
 use parser::ast::{Atom, Node};
+use std::collections::hash_map::DefaultHasher;
 use std::fmt::Display;
+use std::hash::{Hash, Hasher};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum EvalResult {
     Atom(Atom),
     QuoteAtom(Atom),
     QuoteList(Vec<Node>),
+    Proc(UserProc),
+}
+
+fn calculate_hash<T: Hash>(t: &T) -> u64 {
+    let mut s = DefaultHasher::new();
+    t.hash(&mut s);
+    s.finish()
 }
 
 impl Display for EvalResult {
@@ -25,6 +34,10 @@ impl Display for EvalResult {
                 }
 
                 Ok(())
+            }
+            EvalResult::Proc(p) => {
+                let h = calculate_hash(p);
+                write!(f, "procedure:{h}")
             }
         }
     }

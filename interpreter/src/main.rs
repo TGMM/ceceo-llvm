@@ -1,5 +1,6 @@
 #![feature(let_chains)]
 #![feature(once_cell)]
+#![feature(const_trait_impl)]
 #![deny(clippy::all)]
 #![warn(clippy::pedantic)]
 #![warn(clippy::nursery)]
@@ -18,6 +19,7 @@ mod numeric_procs;
 mod procs_impl;
 mod string_procs;
 mod tests;
+mod user_proc;
 
 use clap::Parser;
 use expr_interpreter::interpret_ceceo;

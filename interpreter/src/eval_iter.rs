@@ -1,11 +1,11 @@
 use parser::ast::Node;
 
-use crate::{eval_result::EvalResult, expr_interpreter::handle_list};
+use crate::{eval_result::EvalResult, expr_interpreter::eval_list};
 
 pub fn eval_node(node: &Node) -> EvalResult {
     return match node {
         Node::Atom(a) => EvalResult::Atom(a.clone()),
-        Node::List(l) => handle_list(l),
+        Node::List(l) => eval_list(l),
         Node::QuoteList(ql) => EvalResult::QuoteList(ql.clone()),
         Node::QuoteAtom(qa) => EvalResult::QuoteAtom(qa.clone()),
     };

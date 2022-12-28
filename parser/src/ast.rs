@@ -1,4 +1,4 @@
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Hash, Debug, PartialEq)]
 pub enum Node {
     Atom(Atom),
     List(Vec<Node>),
@@ -6,7 +6,7 @@ pub enum Node {
     QuoteAtom(Atom),
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum Atom {
     Num(i32),
     Symbol(String),

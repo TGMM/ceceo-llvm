@@ -2,7 +2,7 @@ use std::sync::LazyLock;
 
 use crate::{
     eval_iter::{EvalIter, eval_node}, eval_proc::EvalProc,
-    generic_procs::GenericProcs, numeric_procs::NumericProcs, string_procs::StringProcs, eval_result::EvalResult,
+    generic_procs::GenericProcs, numeric_procs::NumericProcs, string_procs::StringProcs, eval_result::EvalResult, expr_interpreter::PROC_MAP, user_proc::UserProc,
 };
 use parser::ast::{Atom, Node};
 
@@ -109,7 +109,7 @@ fn eval_result_is_false(er: &EvalResult) -> bool {
     return false;
 }
 
-fn evaluate_and_return_last(node_list: &[Node]) -> Option<EvalResult> {
+pub fn evaluate_and_return_last(node_list: &[Node]) -> Option<EvalResult> {
     let mut ret = None;
     for node in node_list {
         ret = Some(eval_node(node));
@@ -252,8 +252,57 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
             test_number(node_slice, |num| num == &0)
         }
 
-        fn define() {
-            todo!()
+        fn define(node_slice: &[Node]) -> EvalResult {
+            if node_slice.len() != 2 {
+                panic!("{INCORRECT_ARG_NUM}");
+            }
+
+            let first = &node_slice[0];
+            if let Node::Atom(atom) = first &&
+            let Atom::Symbol(sym) = atom {
+                let mut proc_map = PROC_MAP.write().unwrap();
+                proc_map.insert(sym.to_owned(), true);
+                return VOID.clone();
+            }
+
+            panic!("The first argument for define must be a symbol");
+        }
+        
+        fn lambda(node_slice: &[Node]) -> EvalResult {
+            if node_slice.len() < 2 {
+                panic!("{INCORRECT_ARG_NUM}");
+            }
+
+            let arg_decl = &node_slice[0];
+            let body = &node_slice[1..];
+
+            if body.is_empty() {
+                panic!("Incorrect lambda syntax: Missing body");
+            }
+
+            if let Node::Atom(atom) = arg_decl {
+                if let Atom::Symbol(sym) = atom {
+                    return EvalResult::Proc(UserProc::new(vec![sym.to_owned()], body.to_owned()).quote_starts_at(0));
+                }
+
+                panic!("Incorrect lambda syntax: Bad arguments");
+            }
+
+            if let Node::List(list) = arg_decl {
+                let mut arg_vec = Vec::new();
+                for node in list {
+                    if let Node::Atom(atom) = node
+                    && let Atom::Symbol(sym) = atom {
+                        arg_vec.push(sym.to_owned());
+                    } else {
+                        panic!("Incorrect lambda syntax: Argument must be a symbol");
+                    }
+                }
+
+                return EvalResult::Proc(UserProc::new(arg_vec, body.to_owned()).quote_starts_at(0));
+            }
+
+            panic!("Incorrect lambda syntax: Bad arguments");
         }
 
         match proc_type {
@@ -265,7 +314,8 @@ impl ProcImpls<EvalResult, GenericProcs> for &[Node] {
             GenericProcs::Cond => cond(self),
             GenericProcs::IsPositive => is_positive(self),
             GenericProcs::IsZero => is_zero(self),
-            GenericProcs::Define => todo!(),
+            GenericProcs::Define => define(self),
+            GenericProcs::Lambda => lambda(self),
         }
     }
 }
